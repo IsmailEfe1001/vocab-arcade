@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive Vocab Quiz Builder</title>
+    <style>
+        :root {
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --primary-light: rgba(129, 140, 248, 0.15);
+            --success: #34d399;
+            --error: #f87171;
+            --background: #0f172a; /* Rich Deep Dark Slate */
+            --card: rgba(30, 41, 59, 0.7); /* Translucent Glass */
+            --text-main: #f8fafc; /* Crisp Off-White */
+            --text-muted: #94a3b8; /* Soft Gray Blue */
+            --border: rgba(255, 255, 255, 0.08);
+            --gray-bg: rgba(15, 23, 42, 0.6);
+            --panel-bg: rgba(15, 23, 42, 0.4);
+            --arcade-gold: #f59e0b;
+            --admin-purple: #a855f7;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .ui-selector-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            resize: vertical;
+            font-family: 'Fira Code', monospace;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            background-color: var(--gray-bg);
+            color: var(--text-main);
+            transition: all 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        textarea:focus, input[type="text"]:focus, select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+            background-color: #1e293b;
+        }
+
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width-panel {
+                grid-column: span 2;
+            }
+        }
+
+        .panel {
+            padding: 1.5rem;
+            background: var(--panel-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .settings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 0.25rem 0;
+        }
+
+        .settings-item label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .settings-item.disabled label {
+            color: #475569;
+            text-decoration: line-through;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            padding: 0.65rem 0.85rem;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: var(--gray-bg);
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:disabled, input[type="number"]:disabled, select:disabled {
+            background-color: rgba(15, 23, 42, 0.2);
+            color: #475569;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.03);
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%2394a3b8' stroke-width='1.5'><path d='M1 1l4 4 4-4'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 0.85rem center;
+            padding-right: 2.2rem !important;
+        }
+
+        select option {
+            background-color: #1e293b;
+            color: var(--text-main);
+        }
+
+        /* Checkbox Styling */
+        .official-container {
+            display: flex;
+            align-items: center;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px dashed rgba(245, 158, 11, 0.3);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .official-container:hover {
+            background: rgba(245, 158, 11, 0.12);
+        }
+        .official-container input {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--arcade-gold);
+        }
+        .official-label-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--arcade-gold);
+        }
+
+        #user-answer { 
+            width: 100%; 
+            margin-bottom: 1.5rem; 
+            padding: 1.25rem; 
+            font-size: 1.25rem;
+            border: 2px solid var(--border);
+            background-color: var(--gray-bg);
+            border-radius: 12px;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        #user-answer:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            color: white;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button:disabled {
+            background-color: #334155 !important;
+            color: #64748b !important;
+            cursor: not-allowed;
+            transform: none !important;
+            border-color: transparent !important;
+        }
+
+        .btn-primary { background-color: var(--primary); }
+        .btn-primary:hover { background-color: var(--primary-hover); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+        
+        .btn-success { background-color: #059669; }
+        .btn-success:hover { background-color: var(--success); box-shadow: 0 4px 20px rgba(52, 211, 153, 0.3); }
+
+        .btn-gray { background-color: #334155; border: 1px solid var(--border); color: #e2e8f0; }
+        .btn-gray:hover { background-color: #475569; }
+
+        .btn-orange { background-color: #ea580c; }
+        .btn-orange:hover { background-color: #f97316; box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3); }
+
+        .btn-purple { background-color: #8b5cf6; }
+        .btn-purple:hover { background-color: var(--admin-purple); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3); }
+
+        .btn-large {
+            width: 100%;
+            padding: 1.1rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        .quiz-action-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 14px;
+        }
+
+        .hidden { display: none !important; }
+        
+        .feedback {
+            padding: 1.25rem;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .correct { 
+            background-color: rgba(6, 95, 70, 0.3); 
+            color: #a7f3d0;
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+        .incorrect { 
+            background-color: rgba(153, 27, 27, 0.3); 
+            color: #fecaca;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .quiz-word-display {
+            font-size: 2.5rem; 
+            font-weight: 800;
+            margin: 2.5rem 0;
+            text-align: center;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .quiz-word-display span {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .timer-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 1s linear, background-color 0.5s ease;
+        }
+        
+        .free-timer-text {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid rgba(129, 140, 248, 0.2);
+        }
+
+        .hearts-display {
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .arcade-input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .arcade-letter-input {
+            width: 60px;
+            height: 70px;
+            font-size: 2.25rem;
+            font-weight: 900;
+            text-align: center;
+            text-transform: uppercase;
+            border: 2px solid var(--border);
+            background: var(--gray-bg);
+            color: var(--arcade-gold);
+            border-radius: 10px;
+        }
+
+        .arcade-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .arcade-table th {
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .arcade-table td {
+            padding: 0.65rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .arcade-table tr:nth-child(1) td { color: #f59e0b; font-weight: bold; }
+        .arcade-table tr:nth-child(2) td { color: #cbd5e1; }
+        .arcade-table tr:nth-child(3) td { color: #b45309; }
+
+        .modal-view {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .word-count-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-selector-box">
+        <span id="ui-label-text">🌐 App Language:</span>
+        <select id="ui-lang-select" onchange="changeUILanguage(this.value)" style="padding: 0.35rem; font-size: 0.85rem; width: auto; border-radius: 6px;">
+            <option value="en">English</option>
+            <option value="tr">Türkçe</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="ja">日本語</option>
+        </select>
+    </div>
+
+    <div id="setup-screen" class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <h1 id="ui-main-title">Vocab Arcade Arena</h1>
+                <p id="ui-main-desc" style="margin-bottom: 0;">Select your wordlist, configure parameters, and challenge the highscores.</p>
+            </div>
+            <button id="ui-admin-panel-btn" class="btn-purple" style="padding: 0.75rem 1.25rem;" onclick="openAdminPanel()">
+                ⚙️ Word Manager
+            </button>
+        </div>
+        
+        <div class="dashboard-layout">
+            <div class="panel full-width-panel" style="background: rgba(30, 41, 59, 0.45); border-color: rgba(129, 140, 248, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h3 id="ui-storage-title" style="margin: 0;">💾 Select Active Wordlist</h3>
+                    <div id="active-list-count" class="word-count-badge">0 words loaded</div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
+                    <select id="saved-lists-dropdown" style="width: 100%; font-size: 1rem; padding: 0.75rem;" onchange="loadSelectedList()">
+                        <option value="">-- Choose a list to practice --</option>
+                    </select>
+                    <button id="ui-refresh-btn" class="btn-gray" onclick="updateDropdown()">🔄 Refresh</button>
+                </div>
+            </div>
+
+            <div class="panel full-width-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 id="ui-settings-title" style="margin: 0;">⚙️ Quiz Parameters & Settings</h3>
+                    
+                    <label class="official-container">
+                        <input type="checkbox" id="official-mode-checkbox" onchange="updateSettingsDependencies()">
+                        <span class="official-label-text" id="ui-official-label">🏆 Official Mode</span>
+                    </label>
+                </div>
+                
+                <div class="settings-grid">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                        <div class="settings-item">
+                            <label id="ui-label-mode">Game Rule Mode:</label>
+                            <select id="quiz-mode-select" onchange="updateSettingsDependencies()" style="width: 170px;">
+                                <option value="survival" id="ui-mode-survival">Survival Mode</option>
+                                <option value="free" id="ui-mode-free">Free Mode</option>
+                                <option value="infinite" id="ui-mode-infinite">Infinite Mode</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-item">
+                            <label id="ui-label-direction">Question Target:</label>
+                            <select id="quiz-direction-select" onchange="updateSettingsDependencies()" style="width: 170px;">
+                                <option value="normal" id="ui-dir-normal">Guess Translation</option>
+                                <option value="reverse" id="ui-dir-reverse">Guess Original Word</option>
+                                <option value="mixed" id="ui-dir-mixed">Mixed Combo (Random)</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-item" id="setting-item-timer">
+                            <label id="ui-label-time-limit">Countdown Limit:</label>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <input type="number" id="survival-time-input" value="15" min="5" max="60" style="width: 80px;" onchange="updateSettingsDependencies()">
+                                <span style="color:var(--text-muted); font-size: 0.9rem;">seconds</span>
+                            </div>
+                        </div>
+
+                        <div class="settings-item" id="setting-item-hearts">
+                            <label id="ui-label-hearts">Starting Hearts:</label>
+                            <select id="infinite-hearts-select" style="width: 170px;">
+                                <option value="3">3 ❤️❤️❤️</option>
+                                <option value="4" selected>4 ❤️❤️❤️❤️</option>
+                                <option value="5">5 ❤️❤️❤️❤️❤️</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-item">
+                            <label id="ui-label-volume">SFX Volume:</label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="range" id="sfx-volume-slider" min="0" max="100" value="80" oninput="updateVolumeLabel(this.value)">
+                                <span id="volume-badge" style="font-weight:700; color:var(--primary); font-size:0.85rem; width:35px; text-align:right;">80%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="ui-view-leaderboard-btn" class="btn-orange" style="padding: 1rem 2rem;" onclick="openLeaderboardView()">
+                        🏆 View Leaderboard
+                    </button>
+                    <span id="sandbox-warning-text" style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;"></span>
+                </div>
+            </div>
+        </div>
+
+        <button id="ui-start-btn" class="btn-success btn-large" onclick="startQuiz()">Start Quiz Challenge</button>
+    </div>
+
+    <datalist id="languages-list"></datalist>
+
+    <div id="quiz-screen" class="card hidden">
+        <div id="timer-wrapper" class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
+
+        <div class="header-row">
+            <h2 id="progress" style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin:0;">Question 1/X</h2>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span id="hearts-box" class="hearts-display hidden">❤️❤️❤️❤️</span>
+                <span id="free-clock" class="free-timer-text hidden">0s</span>
+                <button id="ui-back-btn" class="btn-gray" style="padding: 0.45rem 0.85rem; font-size: 0.85rem;" onclick="backToSetup()">◀ Exit</button>
+            </div>
+        </div>
+
+        <div class="quiz-word-display">
+            <span id="ui-translate-label">Translate:</span> 
+            <strong id="question-word">---</strong>
+        </div>
+        
+        <input type="text" id="user-answer" placeholder="Type your translation here..." autocomplete="off">
+        
+        <div class="quiz-action-grid">
+            <button id="action-btn" class="btn-primary btn-large" onclick="handleSubmit()">Submit Answer</button>
+            <button id="skip-btn" class="btn-gray btn-large" onclick="handleSkip()">Skip</button>
+        </div>
+
+        <div id="feedback" class="feedback hidden" style="margin-top: 1.5rem;"></div>
+    </div>
+
+    <div id="arcade-entry-screen" class="card hidden" style="text-align: center; padding: 3rem 2rem;">
+        <h2 style="color: var(--arcade-gold); font-size: 2rem; margin-bottom: 0.5rem;">🏆 TOP SCORE DETECTED 🏆</h2>
+        <p id="ui-arcade-prompt-desc">Enter your 3-letter initials to join the Leaderboard:</p>
+        
+        <div class="arcade-input-container">
+            <input type="text" id="char1" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
+            <input type="text" id="char2" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
+            <input type="text" id="char3" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
+        </div>
+        
+        <button class="btn-success btn-large" style="max-width: 250px; margin-top: 1rem;" onclick="saveArcadeScore()">Register Score</button>
+    </div>
+
+    <div id="results-screen" class="card hidden" style="text-align: center; padding: 3.5rem 2rem;">
+        <h2 id="ui-complete-title" style="font-size: 2.25rem; background: none; -webkit-text-fill-color: initial;">Quiz Complete! 🎉</h2>
+        <p id="score-text" style="font-size: 1.25rem; color: var(--text-muted); margin: 1.5rem 0;"></p>
+        
+        <div id="leaderboard-display-wrapper" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); max-width: 500px; margin: 0 auto 2rem auto;">
+            <h3 style="justify-content: center; color: var(--arcade-gold);">📊 Current Standings</h3>
+            <div id="results-leaderboard-container"></div>
+        </div>
+
+        <button id="ui-reset-btn" class="btn-primary btn-large" style="max-width: 300px; margin: 0 auto;" onclick="resetQuiz()">Try Again / New List</button>
+    </div>
+
+    <div id="leaderboard-modal" class="modal-view hidden">
+        <div class="card" style="width: 90%; max-width: 550px; border-color: var(--arcade-gold); margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="color: var(--arcade-gold); display: flex; align-items: center; gap: 8px;">🏆 Arcade Leaderboards</h2>
+                <button class="btn-gray" style="padding: 0.35rem 0.75rem;" onclick="closeLeaderboardView()">✕ Close</button>
+            </div>
+            <p style="font-size: 0.85rem; margin-bottom: 1rem;" id="ui-modal-board-desc">Showing official ranking branches for current configuration:</p>
+            
+            <div id="modal-leaderboard-content"></div>
+        </div>
+    </div>
+
+    <div id="admin-panel-modal" class="modal-view hidden">
+        <div class="card" style="width: 95%; max-width: 750px; border-color: var(--admin-purple); margin-bottom: 0; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                <h2 style="color: var(--admin-purple); display: flex; align-items: center; gap: 8px;">🛠️ Word Registration & Translation Manager</h2>
+                <button class="btn-gray" style="padding: 0.35rem 0.75rem;" onclick="closeAdminPanel()">✕ Close</button>
+            </div>
+
+            <p id="ui-admin-desc" style="font-size:0.9rem;">Type your words below (one entry per line). Use the auto-translator module or structure them manually using the format: <code>Word = Translation</code></p>
+            
+            <textarea id="word-input" oninput="calculateInputListSize()" placeholder="Apple = Apfel&#10;Banana = Banane&#10;Cat = Katze"></textarea>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="panel" style="background: rgba(0,0,0,0.25);">
+                    <h3 id="ui-trans-title">🤖 Search & Auto-Translate</h3>
+                    <div class="flex-row" style="margin-bottom: 0.75rem;">
+                        <input type="text" id="lang-from-search" class="lang-search-input" list="languages-list" value="English" onclick="this.value=''" placeholder="From...">
+                        <span style="align-self: center; font-weight: bold; color: var(--text-muted);">➔</span>
+                        <input type="text" id="lang-to-search" class="lang-search-input" list="languages-list" value="German" onclick="this.value=''" placeholder="To...">
+                    </div>
+                    <button id="translate-btn" class="btn-orange" style="width: 100%;" onclick="runAutoTranslation()">Auto-Translate Untranslated Lines</button>
+                </div>
+
+                <div class="panel" style="background: rgba(0,0,0,0.25);">
+                    <h3 id="ui-admin-storage-title">💾 Save / Mutate Lists</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="list-name" placeholder="Name your storage pack...">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button id="ui-save-btn" class="btn-success" style="padding: 0.65rem;" onclick="saveCurrentList()">💾 Save Pack</button>
+                            <button id="ui-delete-btn" class="btn-gray" style="background-color: #991b1b; border: none; padding: 0.65rem;" onclick="deleteSelectedList()">🗑️ Wipe Pack</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+                <button id="ui-reset-progress-btn" class="btn-gray" style="background-color: #7f1d1d; border-color: #b91c1c; font-size: 0.85rem;" onclick="resetAllProgressRecords()">
+                    💥 Nuke Records
+                </button>
+                <button class="btn-primary" style="padding: 0.75rem 2rem;" onclick="closeAdminPanel()">Apply & Exit Manager</button>
+            </div>
+        </div>
+    </div>
+
+   <script>
+        const responseFeedbackPools = {
+            en: {
+                correct: ["✨ Correct! Fantastic job.", "🌟 Brilliant! You nailed it.", "🔥 Phenomenal! Spot on.", "🚀 Outstanding answer!", "🎉 Absolutely right! Keep it up."],
+                incorrect: ["❌ Not quite. Better luck next time!", "🦖 Close, but not it! Practice makes perfect.", "💫 Ups! Give it another shot on the next one.", "🧠 Incorrect this time, keep exercising your mind!", "⚡ No worries, shake it off and try the next one!"],
+                timeout: ["⏰ Time's up! Speed up next time.", "⌛ Ran out of time! Keep your fingers moving.", "⚡ Too slow! Don't let the clock beat you."],
+                confirmReset: "Are you sure you want to completely wipe out ALL your high scores and records for this specific parameters bracket? This cannot be undone.",
+                resetProgressBtn: "💥 Nuke Records",
+                sandboxWarning: "⚠️ Custom configuration profile active. Leaderboard registration is offline.",
+                officialWarning: "🏆 Official Match settings verified. Leaderboard connectivity is live!"
+            },
+            tr: {
+                correct: ["✨ Doğru! Harika iş.", "🌟 Harika! Tam on ikiden vurdun.", "🔥 Süper! Aynen böyle devam.", "🚀 Olağanüstü bir cevap!", "🎉 Kesinlikle doğru! Durmak yok."],
+                incorrect: ["❌ Pek değil. Bir dahakine bol şans!", "🦖 Yakındın ama olmadı! Pratik mükemmelleştirir.", "💫 Hay aksi! Bir sonraki soruda tekrar dene.", "🧠 Bu kez olmadı, zihnini çalıştırmaya devam et!", "⚡ Sorun değil, canını sıkma ve sonrakine odaklan!"],
+                timeout: ["⏰ Süre Bitti! Bir dahakine daha hızlı olmalısın.", "⌛ Zaman tükendi! Parmakları hızlaştırın.", "⚡ Çok yavaş! Saatin seni yenmesine izin verme."],
+                confirmReset: "TÜM yüksek skorlarınızı ve hız rekorlarınızı tamamen sıfırlamak istediğinize emin misiniz? Bu işlem geri alınamaz.",
+                resetProgressBtn: "💥 Skorları Sıfırla",
+                sandboxWarning: "⚠️ Özel ayarlar devrede. Liderlik tablosu kaydı pasiftir.",
+                officialWarning: "🏆 Resmi Maç kuralları doğrulandı. Skor kaydı aktif!"
+            },
+            es: {
+                correct: ["✨ ¡Correcto! Excelente trabajo.", "🌟 ¡Brillante! Lo has clavado.", "🔥 ¡Fenomenal! Justo en el clavo.", "🚀 ¡Respuesta sobresaliente!", "🎉 ¡Absolutamente correcto! Sigue así."],
+                incorrect: ["❌ No del todo. ¡Más suerte la próxima vez!", "🦖 ¡Cerca, pero no! La práctica hace al maestro.", "💫 ¡Uy! Inténtalo de nuevo en la siguiente.", "🧠 Incorrecto esta vez, ¡sigue ejercitando tu mente!", "⚡ ¡No te preocupes, olvídalo y ve por la próxima!"],
+                timeout: ["⏰ ¡Tiempo agotado! Más rápido la próxima vez.", "⌛ ¡Se acabó el tiempo! Mueve esos dedos.", "⚡ ¡Demasiado lento! No dejes que el reloj te gane."],
+                confirmReset: "¿Estás seguro de que deseas borrar por completo TODOS tus récords? Esto no se puede deshacer.",
+                resetProgressBtn: "💥 Borrar Récords",
+                sandboxWarning: "⚠️ Ajustes personalizados. Registro de records desactivado.",
+                officialWarning: "🏆 ¡Partida Oficial! Tabla de clasificación activa."
+            }
+        };
+
+        const uiLanguages = {
+            en: {
+                label: "🌐 App Language:", title: "Vocab Arcade Arena", desc: "Select your wordlist, configure parameters, and challenge the highscores.",
+                transTitle: "🤖 Search & Auto-Translate", autoTrans: "Auto-Translate", storageTitle: "💾 Select Active Wordlist", listPlaceholder: "Name your storage pack...",
+                save: "💾 Save Pack", load: "Load", delete: "🗑️ Wipe Pack", start: "Start Quiz Challenge", translateLabel: "Translate:", submit: "Submit Answer", 
+                next: "Next Question", quizComplete: "Quiz Complete! 🎉", tryAgain: "Try Again / New List", question: "Question", of: "of", rerun: "Rerun",
+                alertSelect: "Please choose or create a valid list setup pack.", alertConfirmDelete: "Are you sure you want to permanently delete this list entry from local registry storage?",
+                textPrompt: "Please write or format down vocab entries inside the text box first!", correctMsgPlaceholder: "Correct!", incorrectMsgPlaceholder: "The correct answer is: ",
+                back: "◀ Exit", skip: "Skip",
+                modeSurvival: "Survival Mode", modeFree: "Free Mode", modeInfinite: "Infinite Mode",
+                timeLabel: "Countdown Limit:", heartsLabel: "Starting Hearts:", wordsAnswered: "words correctly answered!", streak: "Total Answered:", infGameOver: "Game Over! 💔",
+                settingsTitle: "⚙️ Quiz Parameters & Settings", modeLabel: "Game Rule Mode:", volumeLabel: "SFX Volume:",
+                directionLabel: "Question Target:", dirNormal: "Guess Translation", dirReverse: "Guess Original Word", dirMixed: "Mixed Combo (Random)",
+                officialLabel: "🏆 Official Mode"
+            },
+            tr: {
+                label: "🌐 Uygulama Dili:", title: "Kelime Arenası", desc: "Kelime listenizi seçin, parametreleri ayarlayın ve yüksek skorlara meydan okuyun.",
+                transTitle: "🤖 Ara & Otomatik Çevir", autoTrans: "Otomatik Çevir", storageTitle: "💾 Aktif Kelime Listesi Seçin", listPlaceholder: "Listenize isim verin...",
+                save: "💾 Listeyi Kaydet", load: "Yükle", delete: "🗑️ Seçileni Sil", start: "Testi Başlat", translateLabel: "Çevirisi nedir:", submit: "Cevabı Gönder", 
+                next: "Sıradaki Soru", quizComplete: "Test Tamamlandı! 🎉", tryAgain: "Tekrar Dene / Yeni Liste", question: "Soru", of: "/", rerun: "Tekrar",
+                alertSelect: "Lütfen önce açılır menüden bir liste seçin.", alertConfirmDelete: "Bu listeyi kalıcı olarak silmek istediğinize emin misiniz?",
+                textPrompt: "Lütfen önce kelime alanına veri girin!", correctMsgPlaceholder: "Doğru!", incorrectMsgPlaceholder: "Doğru cevap: ",
+                back: "◀ Geri Dön", skip: "Pas Geç",
+                modeSurvival: "Hayatta Kalma Modu", modeFree: "Serbest Mod", modeInfinite: "Sonsuz Mod",
+                timeLabel: "Süre Sınırı:", heartsLabel: "Başlangıç Canı:", wordsAnswered: "kelime doğru bilindi!", streak: "Toplam Cevaplanan:", infGameOver: "Oyun Bitti! 💔",
+                settingsTitle: "⚙️ Test Parametreleri & Ayarlar", modeLabel: "Oyun Kural Modu:", volumeLabel: "Ses Seviyesi:",
+                directionLabel: "Soru Hedefi:", dirNormal: "Çeviriyi Tahmin Et", dirReverse: "Orijinal Kelimeyi Tahmin Et", dirMixed: "Karışık Düzen (Rastgele)",
+                officialLabel: "🏆 Resmi Mod"
+            },
+            es: {
+                label: "🌐 Idioma de la App:", title: "Vocab Arcade Arena", desc: "Selecciona tu lista, configura los parámetros y desafía los récords.",
+                transTitle: "🤖 Buscar y Traducir", autoTrans: "Auto-Traducir", storageTitle: "💾 Seleccionar Lista Activa", listPlaceholder: "Nombre de la lista...",
+                save: "Guardar Lista", load: "Cargar", delete: "Eliminar", start: "Empezar Cuestionario", translateLabel: "Traduce:", submit: "Enviar Respuesta", 
+                next: "Siguiente Pregunta", quizComplete: "¡Cuestionario Completado! 🎉", tryAgain: "Intentar de Nuevo / Nueva Liste", question: "Pregunta", de: "de", rerun: "Repetir",
+                alertSelect: "Por favor, selecciona primero una lista válida.", alertConfirmDelete: "¿Estás seguro de que deseas eliminar permanentemente esta lista?",
+                textPrompt: "¡Por favor, introduce algunas palabras primero!", correctMsgPlaceholder: "¡Correcto!", incorrectMsgPlaceholder: "La respuesta correcta es: ",
+                back: "◀ Salir", skip: "Saltar",
+                modeSurvival: "Modo Supervivencia", modeFree: "Modo Libre", modeInfinite: "Modo Infinito",
+                timeLabel: "Límite de Tiempo:", heartsLabel: "Corazones Iniciales:", wordsAnswered: "¡palabras correctamente respondidas!", streak: "Total Respondidas:", infGameOver: "¡Fin del Juego! 💔",
+                settingsTitle: "⚙️ Parámetros y Ajustes", modeLabel: "Modo de Regla:", volumeLabel: "Volumen SFX:",
+                directionLabel: "Objetivo de Pregunta:", dirNormal: "Adivinar Traducción", dirReverse: "Adivinar Palabra Original", dirMixed: "Combinación Mixta (Aleatoria)",
+                officialLabel: "🏆 Modo Oficial"
+            }
+        };
+
+        let currentUILang = "en";
+
+        const languageDictionary = {
+            "English": "en", "Turkish": "tr", "Spanish": "es", "French": "fr", "German": "de", "Japanese": "ja"
+        };
+
+        let wordList = [];
+        let backupPool = []; 
+        let score = 0;
+        let isShowingFeedback = false;
+        let activeQuizMode = "survival";
+        let activeQuizDirection = "normal"; 
+        let totalListSize = 0;
+        let wasGameOfficialMatch = false; 
+
+        // Game parameters
+        let survivalTimeLimit = 15;
+        let currentHearts = 3;
+        let infiniteQuestionsAnswered = 0;
+        let sfxVolume = 80; 
+
+        // Timers
+        let timerInterval = null;
+        let timeLeft = 15;
+        let globalCountUpSeconds = 0;
+        let survivalTotalAccumulatedSeconds = 0;
+
+        // Runtime question state handles
+        let currentPromptText = "";
+        let currentAnswerText = "";
+
+        // Audio Context Handle
+        let audioCtx = null;
+
+        // DOM Elements
+        const setupScreen = document.getElementById('setup-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const arcadeEntryScreen = document.getElementById('arcade-entry-screen');
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const adminPanelModal = document.getElementById('admin-panel-modal');
+        
+        const wordInput = document.getElementById('word-input');
+        const listNameInput = document.getElementById('list-name');
+        const savedListsDropdown = document.getElementById('saved-lists-dropdown');
+        const activeListCount = document.getElementById('active-list-count');
+        const officialModeCheckbox = document.getElementById('official-mode-checkbox');
+        const sandboxWarningText = document.getElementById('sandbox-warning-text');
+        
+        const questionWord = document.getElementById('question-word');
+        const userAnswer = document.getElementById('user-answer');
+        const actionBtn = document.getElementById('action-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const feedback = document.getElementById('feedback');
+        const progress = document.getElementById('progress');
+        const scoreText = document.getElementById('score-text');
+        const translateBtn = document.getElementById('translate-btn');
+        const timerBar = document.getElementById('timer-bar');
+        const timerWrapper = document.getElementById('timer-wrapper');
+        const freeClock = document.getElementById('free-clock');
+        const quizModeSelect = document.getElementById('quiz-mode-select');
+        const quizDirectionSelect = document.getElementById('quiz-direction-select');
+        const heartsBox = document.getElementById('hearts-box');
+        const resultsLeaderboardContainer = document.getElementById('results-leaderboard-container');
+        const leaderboardDisplayWrapper = document.getElementById('leaderboard-display-wrapper');
+        const modalLeaderboardContent = document.getElementById('modal-leaderboard-content');
+        const uiResetProgressBtn = document.getElementById('ui-reset-progress-btn');
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx || sfxVolume === 0) return;
+
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime((sfxVolume / 100) * 0.35, audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.35);
+            } else if (type === 'incorrect') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(90, now + 0.4);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain); gain.connect(masterGain);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'timeout') {
+                [0, 0.15].forEach(delay => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(110, now + delay);
+                    osc.frequency.linearRampToValueAtTime(60, now + delay + 0.12);
+                    gain.gain.setValueAtTime(0.8, now + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.12);
+                    osc.connect(gain); gain.connect(masterGain);
+                    osc.start(now + delay); osc.stop(now + delay + 0.13);
+                });
+            }
+        }
+
+        function getRandomEncouragement(type) {
+            const pool = (responseFeedbackPools[currentUILang] && responseFeedbackPools[currentUILang][type]) ? responseFeedbackPools[currentUILang][type] : responseFeedbackPools['en'][type];
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function calculateInputListSize() {
+            const text = wordInput.value.trim();
+            if (!text) {
+                totalListSize = 0;
+            } else {
+                const parsed = text.split('\n').map(line => {
+                    return line.includes('=') ? line : null;
+                }).filter(l => l !== null);
+                totalListSize = parsed.length;
+            }
+            activeListCount.innerText = `${totalListSize} words loaded`;
+        }
+
+        // LEADERBOARD DATA MANAGER
+        function getStorageKey() {
+            const mode = quizModeSelect.value;
+            const direction = quizDirectionSelect.value;
+            const survivalLimit = 15; // Official is forced to 15
+            if (mode === "infinite") {
+                return `arcade_inf_len${totalListSize}_dir_${direction}`;
+            } else {
+                return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_${survivalLimit}`;
+            }
+        }
+
+        function getLeaderboardData() {
+            const key = getStorageKey();
+            const rawData = localStorage.getItem(key);
+            return rawData ? JSON.parse(rawData) : [];
+        }
+
+        function isScoreEligibleForLeaderboard() {
+            if (!wasGameOfficialMatch) return false; // Enforce official version
+            if (totalListSize === 0) return false;
+            
+            const mode = quizModeSelect.value;
+            if (mode === "free") return false; // Free mode doesn't track records under official conditions
+
+            const board = getLeaderboardData();
+            if (board.length < 5) return true;
+
+            if (mode === "infinite") {
+                return score > board[board.length - 1].score;
+            } else {
+                // Survival Mode: Eligible if your score beats the lowest leaderboard score,
+                // OR if scores are tied but your elapsed time is faster.
+                const lowestEntry = board[board.length - 1];
+                if (score > lowestEntry.score) return true;
+                if (score === lowestEntry.score) {
+                    return survivalTotalAccumulatedSeconds < lowestEntry.time;
+                }
+                return false;
+            }
+        }
+
+        function generateLeaderboardHTML(board) {
+            if (!board || board.length === 0) {
+                return `<p style="color: var(--text-muted); text-align: center; font-style: italic; margin-top: 1rem;">No official entries recorded yet. Secure your rank!</p>`;
+            }
+            const mode = quizModeSelect.value;
+            let rowsHTML = board.map((entry, index) => {
+                let displayVal = mode === "infinite" ? `${entry.score} words` : `${entry.score} pts (${entry.time}s)`;
+                return `<tr>
+                    <td>#${index + 1}</td>
+                    <td style="font-weight: bold; color: var(--text-main);">${entry.initials}</td>
+                    <td style="text-align: right;">${displayVal}</td>
+                </tr>`;
+            }).join('');
+
+            return `<table class="arcade-table">
+                <thead><tr><th>Rank</th><th>Initials</th><th style="text-align: right;">Performance</th></tr></thead>
+                <tbody>${rowsHTML}</tbody>
+            </table>`;
+        }
+
+        function openLeaderboardView() {
+            if (totalListSize === 0) {
+                alert("Please make sure a non-empty wordlist is currently loaded to inspect scores.");
+                return;
+            }
+            const board = getLeaderboardData();
+            modalLeaderboardContent.innerHTML = generateLeaderboardHTML(board);
+            leaderboardModal.classList.remove('hidden');
+        }
+
+        function closeLeaderboardView() { leaderboardModal.classList.add('hidden'); }
+
+        function openAdminPanel() { adminPanelModal.classList.remove('hidden'); }
+        function closeAdminPanel() { adminPanelModal.classList.add('hidden'); }
+
+        function checkLeaderboardQualification() {
+            if (wasGameOfficialMatch && isScoreEligibleForLeaderboard()) {
+                resultsScreen.classList.add('hidden');
+                quizScreen.classList.add('hidden');
+                arcadeEntryScreen.classList.remove('hidden');
+                document.getElementById('char1').value = "A";
+                document.getElementById('char2').value = "A";
+                document.getElementById('char3').value = "A";
+                document.getElementById('char1').focus();
+            } else {
+                showFinalResultsDashboard();
+            }
+        }
+
+        function saveArcadeScore() {
+            const i1 = (document.getElementById('char1').value || "A").substring(0,1).toUpperCase();
+            const i2 = (document.getElementById('char2').value || "A").substring(0,1).toUpperCase();
+            const i3 = (document.getElementById('char3').value || "A").substring(0,1).toUpperCase();
+            const initials = i1 + i2 + i3;
+
+            const mode = quizModeSelect.value;
+            let board = getLeaderboardData();
+
+            // Save both performance metrics uniform across modes
+            board.push({ 
+                initials: initials, 
+                score: score, 
+                time: survivalTotalAccumulatedSeconds, 
+                timestamp: Date.now() 
+            });
+
+            if (mode === "infinite") {
+                board.sort((a, b) => b.score - a.score);
+            } else {
+                // Survival Mode Sorting Rule: Highest score first. If tied, fastest time wins.
+                board.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    return a.time - b.time;
+                });
+            }
+
+            if (board.length > 5) board = board.slice(0, 5);
+            localStorage.setItem(getStorageKey(), JSON.stringify(board));
+            
+            arcadeEntryScreen.classList.add('hidden');
+            showFinalResultsDashboard();
+        }
+
+        function resetAllProgressRecords() {
+            if (totalListSize === 0) return alert("Select a list pack context first before dropping table metrics.");
+            const confirmationText = responseFeedbackPools[currentUILang]?.confirmReset || responseFeedbackPools['en'].confirmReset;
+            if (confirm(confirmationText)) {
+                localStorage.removeItem(getStorageKey());
+                alert("Records wiped out successfully.");
+            }
+        }
+
+        function changeUILanguage(langKey) {
+            currentUILang = uiLanguages[langKey] ? langKey : 'en';
+            const text = uiLanguages[currentUILang];
+
+            document.getElementById('ui-label-text').innerText = text.label;
+            document.getElementById('ui-main-title').innerText = text.title;
+            document.getElementById('ui-main-desc').innerText = text.desc;
+            document.getElementById('ui-trans-title').innerText = text.transTitle;
+            translateBtn.innerText = text.autoTrans;
+            document.getElementById('ui-storage-title').innerText = text.storageTitle;
+            listNameInput.placeholder = text.listPlaceholder;
+            document.getElementById('ui-save-btn').innerText = text.save;
+            document.getElementById('ui-delete-btn').innerText = text.delete;
+            document.getElementById('ui-start-btn').innerText = text.start;
+            document.getElementById('ui-translate-label').innerText = text.translateLabel;
+            document.getElementById('ui-complete-title').innerText = text.quizComplete;
+            document.getElementById('ui-reset-btn').innerText = text.tryAgain;
+            document.getElementById('ui-back-btn').innerText = text.back;
+            document.getElementById('ui-official-label').innerText = text.officialLabel;
+            
+            document.getElementById('ui-settings-title').innerText = text.settingsTitle;
+            document.getElementById('ui-label-mode').innerText = text.modeLabel;
+            document.getElementById('ui-mode-survival').innerText = text.modeSurvival;
+            document.getElementById('ui-mode-free').innerText = text.modeFree;
+            document.getElementById('ui-mode-infinite').innerText = text.modeInfinite;
+            document.getElementById('ui-label-time-limit').innerText = text.timeLabel;
+            document.getElementById('ui-label-hearts').innerText = text.heartsLabel;
+            document.getElementById('ui-label-volume').innerText = text.volumeLabel;
+            
+            document.getElementById('ui-label-direction').innerText = text.directionLabel;
+            document.getElementById('ui-dir-normal').innerText = text.dirNormal;
+            document.getElementById('ui-dir-reverse').innerText = text.dirReverse;
+            document.getElementById('ui-dir-mixed').innerText = text.dirMixed;
+            
+            uiResetProgressBtn.innerText = responseFeedbackPools[currentUILang]?.resetProgressBtn || responseFeedbackPools['en'].resetProgressBtn;
+            skipBtn.innerText = text.skip;
+
+            if (!isShowingFeedback) actionBtn.innerText = text.submit;
+            else actionBtn.innerText = text.next;
+
+            updateSettingsDependencies();
+        }
+
+        function updateVolumeLabel(val) {
+            sfxVolume = parseInt(val);
+            document.getElementById('volume-badge').innerText = val + "%";
+            initAudio(); 
+        }
+
+        function updateSettingsDependencies() {
+            const isOfficial = officialModeCheckbox.checked;
+            const mode = quizModeSelect.value;
+            
+            const timerItem = document.getElementById('setting-item-timer');
+            const heartsItem = document.getElementById('setting-item-hearts');
+            const timeInput = document.getElementById('survival-time-input');
+            const heartsSelect = document.getElementById('infinite-hearts-select');
+
+            // Reset disables
+            timerItem.classList.remove('disabled');
+            heartsItem.classList.remove('disabled');
+            timeInput.disabled = false;
+            heartsSelect.disabled = false;
+            quizModeSelect.disabled = false;
+            quizDirectionSelect.disabled = false;
+
+            // Safe String Fetching Fallback
+            const pool = responseFeedbackPools[currentUILang] || responseFeedbackPools['en'];
+            const officialWarningStr = pool.officialWarning || responseFeedbackPools['en'].officialWarning;
+            const sandboxWarningStr = pool.sandboxWarning || responseFeedbackPools['en'].sandboxWarning;
+
+            // Enforce Official Bracket Rules
+            if (isOfficial) {
+                sandboxWarningText.innerText = officialWarningStr;
+                sandboxWarningText.style.color = "var(--arcade-gold)";
+
+                // Lock Target to Mixed Combo during Official Match conditions
+                quizDirectionSelect.value = "mixed";
+                quizDirectionSelect.disabled = true;
+
+                if (mode === "survival") {
+                    timeInput.value = "15";
+                    timeInput.disabled = true;
+                    heartsItem.classList.add('disabled');
+                    heartsSelect.disabled = true;
+                } else if (mode === "infinite") {
+                    heartsSelect.value = "3";
+                    heartsSelect.disabled = true;
+                    timerItem.classList.add('disabled');
+                    timeInput.disabled = true;
+                } else if (mode === "free") {
+                    timerItem.classList.add('disabled');
+                    timeInput.disabled = true;
+                    heartsItem.classList.add('disabled');
+                    heartsSelect.disabled = true;
+                    sandboxWarningText.innerText = "⚠️ Official Free mode does not register high scores.";
+                    sandboxWarningText.style.color = "var(--error)";
+                }
+            } else {
+                // Sandbox Mode
+                sandboxWarningText.innerText = sandboxWarningStr;
+                sandboxWarningText.style.color = "var(--text-muted)";
+
+                if (mode === "free") {
+                    timerItem.classList.add('disabled'); timeInput.disabled = true;
+                    heartsItem.classList.add('disabled'); heartsSelect.disabled = true;
+                } else if (mode === "survival") {
+                    heartsItem.classList.add('disabled'); heartsSelect.disabled = true;
+                } else if (mode === "infinite") {
+                    timerItem.classList.add('disabled'); timeInput.disabled = true;
+                }
+            }
+        }
+
+        function buildLanguageList() {
+            const datalist = document.getElementById('languages-list');
+            for (let langName in languageDictionary) {
+                const option = document.createElement('option');
+                option.value = langName;
+                datalist.appendChild(option);
+            }
+        }
+
+        async function runAutoTranslation() {
+            const text = wordInput.value.trim();
+            if (!text || totalListSize === 0) return alert(uiLanguages[currentUILang].textPrompt);
+
+            const fromLang = languageDictionary[document.getElementById('lang-from-search').value.trim()];
+            const toLang = languageDictionary[document.getElementById('lang-to-search').value.trim()];
+            if (!fromLang || !toLang) return alert("Select standard dictionary registry matches.");
+
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            translateBtn.disabled = true; translateBtn.innerText = "...";
+            let updatedLines = [...lines];
+
+            for (let i = 0; i < updatedLines.length; i++) {
+                if (!updatedLines[i].includes('=')) {
+                    const originalWord = updatedLines[i];
+                    try {
+                        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(originalWord)}`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        updatedLines[i] = `${originalWord} = ${data[0][0][0].trim()}`;
+                    } catch (e) { console.error(e); }
+                }
+            }
+            wordInput.value = updatedLines.join('\n');
+            translateBtn.disabled = false; translateBtn.innerText = "Auto-Translate Untranslated Lines";
+            calculateInputListSize();
+        }
+
+        function saveCurrentList() {
+            const listName = listNameInput.value.trim();
+            const listContent = wordInput.value.trim();
+            if (!listName || !listContent) {
+                alert("Please add lines and supply an identifying pack label string.");
+                return;
+            }
+            let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
+            allLists[listName] = listContent;
+            localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
+            listNameInput.value = ''; 
+            updateDropdown();
+            alert(`List "${listName}" successfully saved!`);
+        }
+
+        function updateDropdown() {
+            savedListsDropdown.innerHTML = '<option value="">-- Choose a list to practice --</option>';
+            let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
+            for (let listName in allLists) {
+                const option = document.createElement('option');
+                option.value = listName; option.innerText = listName;
+                savedListsDropdown.appendChild(option);
+            }
+        }
+
+        function loadSelectedList() {
+            const selectedName = savedListsDropdown.value;
+            if (!selectedName) {
+                wordInput.value = "";
+                calculateInputListSize();
+                return;
+            }
+            wordInput.value = (JSON.parse(localStorage.getItem('vocabQuizLists')) || {})[selectedName] || '';
+            listNameInput.value = selectedName;
+            calculateInputListSize();
+        }
+
+        function deleteSelectedList() {
+            const selectedName = savedListsDropdown.value;
+            if (!selectedName) return alert(uiLanguages[currentUILang].alertSelect);
+            if (confirm(uiLanguages[currentUILang].alertConfirmDelete)) {
+                let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
+                delete allLists[selectedName];
+                localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
+                updateDropdown();
+                wordInput.value = '';
+                listNameInput.value = '';
+                calculateInputListSize();
+            }
+        }
+
+        function startQuiz() {
+            initAudio(); 
+            const text = wordInput.value.trim();
+            if (!text || totalListSize === 0) return alert("Please select or load a wordlist package via the 'Word Manager' workspace before starting.");
+
+            wordList = text.split('\n').map(line => {
+                const parts = line.split('=');
+                if (parts.length < 2) return null;
+                return { word: parts[0].trim(), translation: parts[1].trim(), skippedBefore: false, originalIndex: 0 };
+            }).filter(item => item !== null);
+
+            wordList.sort(() => Math.random() - 0.5);
+            totalListSize = wordList.length;
+            for(let i = 0; i < totalListSize; i++) { wordList[i].originalIndex = (i + 1); }
+
+            backupPool = wordList.map(item => ({ ...item, skippedBefore: false }));
+            score = 0; infiniteQuestionsAnswered = 0; survivalTotalAccumulatedSeconds = 0;
+            activeQuizMode = quizModeSelect.value; activeQuizDirection = quizDirectionSelect.value;
+            
+            // Set Match Status
+            wasGameOfficialMatch = officialModeCheckbox.checked;
+
+            setupScreen.classList.add('hidden'); resultsScreen.classList.add('hidden');
+            arcadeEntryScreen.classList.add('hidden'); quizScreen.classList.remove('hidden');
+            timerWrapper.classList.add('hidden'); freeClock.classList.add('hidden'); heartsBox.classList.add('hidden');
+            skipBtn.style.visibility = "visible"; 
+            clearInterval(timerInterval);
+
+            if (activeQuizMode === "free") {
+                freeClock.classList.remove('hidden'); globalCountUpSeconds = 0; freeClock.innerText = "0s";
+                timerInterval = setInterval(() => {
+                    globalCountUpSeconds++; freeClock.innerText = `${globalCountUpSeconds}s`;
+                }, 1000);
+            } else if (activeQuizMode === "survival") {
+                timerWrapper.classList.remove('hidden');
+                survivalTimeLimit = wasGameOfficialMatch ? 15 : (parseInt(document.getElementById('survival-time-input').value) || 15);
+            } else if (activeQuizMode === "infinite") {
+                heartsBox.classList.remove('hidden'); skipBtn.style.visibility = "hidden"; 
+                currentHearts = wasGameOfficialMatch ? 3 : (parseInt(document.getElementById('infinite-hearts-select').value) || 4);
+                renderHearts();
+            }
+            showQuestion();
+        }
+
+        function renderHearts() {
+            let heartStr = "";
+            for (let i = 0; i < currentHearts; i++) { heartStr += "❤️"; }
+            heartsBox.innerText = heartStr || "💔";
+        }
+
+        function stopTimerEngine() {
+            if (activeQuizMode === "survival") {
+                survivalTotalAccumulatedSeconds += (survivalTimeLimit - timeLeft);
+                clearInterval(timerInterval);
+            }
+        }
+
+        function runQuestionTimer() {
+            if (activeQuizMode === "survival") {
+                clearInterval(timerInterval);
+                timeLeft = survivalTimeLimit;
+                timerBar.style.backgroundColor = "var(--primary)"; timerBar.style.width = "100%";
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerBar.style.width = `${(timeLeft / survivalTimeLimit) * 100}%`;
+                    if (timeLeft <= 5) timerBar.style.backgroundColor = "var(--error)";
+                    if (timeLeft <= 0) {
+                        survivalTotalAccumulatedSeconds += survivalTimeLimit; 
+                        clearInterval(timerInterval); handleTimeOut();
+                    }
+                }, 1000);
+            }
+        }
+
+        function renderProgressHeader() {
+            const currentItem = wordList[0];
+            if (!currentItem) return;
+
+            const divider = (currentUILang === "ja" || currentUILang === "tr") ? " " : ` ${uiLanguages[currentUILang].of} `;
+            if (activeQuizMode === "infinite") {
+                progress.innerText = `${uiLanguages[currentUILang].streak} ${infiniteQuestionsAnswered}`;
+                return;
+            }
+            
+            // Safe key assessment fallback to prevent string key errors
+            const rerunLabel = uiLanguages[currentUILang].rerun || "Rerun";
+            let badgeText = currentItem.skippedBefore ? ` (${rerunLabel})` : "";
+            progress.innerText = `${uiLanguages[currentUILang].question} ${currentItem.originalIndex}${badgeText}${divider}${totalListSize}`;
+        }
+
+        function showQuestion() {
+            if (wordList.length === 0) {
+                if (activeQuizMode === "infinite") {
+                    wordList = backupPool.map(item => ({ ...item }));
+                    wordList.sort(() => Math.random() - 0.5);
+                } else {
+                    checkLeaderboardQualification(); return;
+                }
+            }
+
+            isShowingFeedback = false; feedback.classList.add('hidden');
+            userAnswer.value = ''; userAnswer.disabled = false;
+            actionBtn.innerText = uiLanguages[currentUILang].submit;
+            if (activeQuizMode !== "infinite") skipBtn.classList.remove('hidden');
+            
+            renderProgressHeader();
+            const currentItem = wordList[0];
+            let activeDirection = activeQuizDirection === "mixed" ? (Math.random() < 0.5 ? "normal" : "reverse") : activeQuizDirection;
+
+            if (activeDirection === "reverse") {
+                currentPromptText = currentItem.translation; currentAnswerText = currentItem.word;
+            } else {
+                currentPromptText = currentItem.word; currentAnswerText = currentItem.translation;
+            }
+
+            questionWord.innerText = currentPromptText;
+            userAnswer.focus();
+            runQuestionTimer();
+        }
+
+        function handleSubmit() {
+            if (isShowingFeedback) {
+                wordList.shift();
+                if (activeQuizMode === "infinite" && currentHearts <= 0) {
+                    checkLeaderboardQualification(); return;
+                }
+                showQuestion(); return;
+            }
+
+            stopTimerEngine();
+            const isCorrect = userAnswer.value.trim().toLowerCase() === currentAnswerText.toLowerCase();
+            feedback.classList.remove('hidden'); userAnswer.disabled = true; skipBtn.classList.add('hidden');
+
+            if (isCorrect) {
+                score++;
+                if (activeQuizMode === "infinite") infiniteQuestionsAnswered++;
+                feedback.className = "feedback correct"; feedback.innerText = getRandomEncouragement('correct');
+                playSound('correct');
+            } else {
+                feedback.className = "feedback incorrect";
+                feedback.innerText = getRandomEncouragement('incorrect') + " -> (" + currentAnswerText + ")";
+                playSound('incorrect');
+                if (activeQuizMode === "infinite") { currentHearts--; renderHearts(); }
+            }
+            actionBtn.innerText = uiLanguages[currentUILang].next; isShowingFeedback = true;
+        }
+
+        function handleTimeOut() {
+            isShowingFeedback = true; userAnswer.disabled = true; skipBtn.classList.add('hidden');
+            feedback.classList.remove('hidden'); feedback.className = "feedback incorrect";
+            feedback.innerText = getRandomEncouragement('timeout') + " " + uiLanguages[currentUILang].incorrectMsgPlaceholder + currentAnswerText;
+            playSound('timeout');
+            if (activeQuizMode === "infinite") { currentHearts--; renderHearts(); }
+            actionBtn.innerText = uiLanguages[currentUILang].next;
+        }
+
+        function handleSkip() {
+            if (activeQuizMode === "infinite") return;
+            stopTimerEngine();
+            wordList[0].skippedBefore = true;
+            wordList.push(wordList.shift());
+            showQuestion();
+        }
+
+        function backToSetup() {
+            clearInterval(timerInterval);
+            quizScreen.classList.add('hidden'); setupScreen.classList.remove('hidden');
+            updateSettingsDependencies();
+        }
+
+        function showFinalResultsDashboard() {
+            quizScreen.classList.add('hidden'); resultsScreen.classList.remove('hidden');
+            
+            // Show leaderboard display module only for verified configurations
+            if (wasGameOfficialMatch && activeQuizMode !== "free") {
+                leaderboardDisplayWrapper.classList.remove('hidden');
+                resultsLeaderboardContainer.innerHTML = generateLeaderboardHTML(getLeaderboardData());
+            } else {
+                leaderboardDisplayWrapper.classList.add('hidden');
+            }
+
+            if (activeQuizMode === "infinite") {
+                document.getElementById('ui-complete-title').innerText = uiLanguages[currentUILang].infGameOver;
+                scoreText.innerHTML = `Game Over! You successfully translated:<br><span style="font-size: 2.5rem; font-weight: bold; color: var(--primary); display:block; margin-top:0.5rem;">${score} ${uiLanguages[currentUILang].wordsAnswered}</span>`;
+                return;
+            }
+
+            document.getElementById('ui-complete-title').innerText = uiLanguages[currentUILang].quizComplete;
+            const percent = totalListSize > 0 ? Math.round((score / totalListSize) * 100) : 0;
+            let timeString = (activeQuizMode === "free") ? `<br><span style="font-size: 1rem; color: var(--text-muted);">Total Time: ${globalCountUpSeconds}s</span>` : `<br><span style="font-size: 1rem; color: var(--text-muted);">Total Official Time Elapsed: ${survivalTotalAccumulatedSeconds}s</span>`;
+
+            scoreText.innerHTML = `You correctly translated <strong>${score} out of ${totalListSize}</strong> words!${timeString}<br><span style="font-size: 2.5rem; font-weight: bold; color: var(--primary); display:block; margin-top:0.5rem;">${percent}%</span>`;
+        }
+
+        function resetQuiz() {
+            resultsScreen.classList.add('hidden'); setupScreen.classList.remove('hidden');
+            calculateInputListSize(); updateSettingsDependencies();
+        }
+
+        userAnswer.addEventListener('keypress', function (e) { if (e.key === 'Enter') { handleSubmit(); } });
+        document.getElementById('char1').addEventListener('input', function() { if(this.value.length) document.getElementById('char2').focus(); });
+        document.getElementById('char2').addEventListener('input', function() { if(this.value.length) document.getElementById('char3').focus(); });
+        document.getElementById('char3').addEventListener('input', function() { if(this.value.length) this.blur(); });
+
+        document.addEventListener('click', () => initAudio(), { once: true });
+        userAnswer.addEventListener('keydown', () => initAudio(), { once: true });
+
+        buildLanguageList();
+        updateDropdown();
+        calculateInputListSize();
+        changeUILanguage('en');
+    </script>
+</body>
+</html>
