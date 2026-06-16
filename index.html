@@ -750,6 +750,40 @@
                 officialLabel: "🏆 Modo Oficial"
             }
         };
+       // Function to fetch and parse the list from GitHub
+async function loadListFromGitHub(filename) {
+    const rawUrl = `https://raw.githubusercontent.com/IsmailEfe1001/vocab-arcade/main/${filename}`;
+    
+    try {
+        const response = await fetch(rawUrl);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const textData = await response.text();
+        
+        // Parse the text data (assuming 'Word = Translation' format per line)
+        const parsedList = [];
+        const lines = textData.split('\n');
+        
+        lines.forEach(line => {
+            if (line.includes('=')) {
+                const parts = line.split('=');
+                const word = parts[0].trim();
+                const translation = parts[1].trim();
+                
+                if (word && translation) {
+                    parsedList.push({ word: word, translation: translation });
+                }
+            }
+        });
+
+        console.log("Successfully loaded list:", parsedList);
+        return parsedList; // This array can now be fed into your game loop!
+
+    } catch (error) {
+        console.error("Failed to load vocabulary list:", error);
+        alert("Could not load the word list. Make sure the filename is correct.");
+    }
+}
 
         let currentUILang = "en";
 
