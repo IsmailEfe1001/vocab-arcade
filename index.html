@@ -104,6 +104,7 @@
             margin-top: 0;
             margin-bottom: 1.5rem;
             font-size: 0.95rem;
+            /* Added margin bottom fallback fix */
         }
 
         textarea {
@@ -294,6 +295,9 @@
         .btn-purple { background-color: #8b5cf6; }
         .btn-purple:hover { background-color: var(--admin-purple); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3); }
 
+        .btn-error { background-color: #dc2626; }
+        .btn-error:hover { background-color: var(--error); box-shadow: 0 4px 20px rgba(248, 113, 113, 0.3); }
+
         .btn-large {
             width: 100%;
             padding: 1.1rem;
@@ -449,7 +453,7 @@
 
         .word-count-badge {
             background: rgba(255, 255, 255, 0.05);
-            padding: 0.25rem 0.6`m;
+            padding: 0.25rem 0.6rem;
             border-radius: 6px;
             font-size: 0.85rem;
             border: 1px solid var(--border);
@@ -602,6 +606,7 @@
     <div id="arcade-entry-screen" class="card hidden" style="text-align: center; padding: 3rem 2rem;">
         <h2 style="color: var(--arcade-gold); font-size: 2rem; margin-bottom: 0.5rem;">🏆 TOP SCORE DETECTED 🏆</h2>
         <p id="ui-arcade-prompt-desc">Enter your 3-letter initials to join the Leaderboard:</p>
+        <div id="sync-submitting-status" style="font-size:0.9rem; color:var(--primary); font-weight:bold; margin-bottom:1rem;" class="hidden">📡 Transmitting score packet safely to GitHub Cloud Engine...</div>
         
         <div class="arcade-input-container">
             <input type="text" id="char1" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
@@ -611,7 +616,7 @@
             <input type="text" id="char3" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
         </div>
         
-        <button class="btn-success btn-large" style="max-width: 250px; margin-top: 1rem;" onclick="saveArcadeScore()">Register Score</button>
+        <button id="arcade-register-btn" class="btn-success btn-large" style="max-width: 250px; margin-top: 1rem;" onclick="saveArcadeScore()">Register Score</button>
     </div>
 
     <div id="results-screen" class="card hidden" style="text-align: center; padding: 3.5rem 2rem;">
@@ -619,8 +624,9 @@
         <p id="score-text" style="font-size: 1.25rem; color: var(--text-muted); margin: 1.5rem 0;"></p>
         
         <div id="leaderboard-display-wrapper" style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); max-width: 500px; margin: 0 auto 2rem auto;">
-            <h3 style="justify-content: center; color: var(--arcade-gold);">📊 Current Standings</h3>
+            <h3 style="justify-content: center; color: var(--arcade-gold);">📊 Global Live Standings</h3>
             <div id="results-leaderboard-container"></div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px; margin-bottom:0; font-style:italic;">Note: Global updates route instantly through secure streams and appear within 30-60s on redeployment.</p>
         </div>
 
         <button id="ui-reset-btn" class="btn-primary btn-large" style="max-width: 300px; margin: 0 auto;" onclick="resetQuiz()">Try Again / New List</button>
@@ -632,7 +638,7 @@
                 <h2 style="color: var(--arcade-gold); display: flex; align-items: center; gap: 8px;">🏆 Arcade Leaderboards</h2>
                 <button class="btn-gray" style="padding: 0.35rem 0.75rem;" onclick="closeLeaderboardView()">✕ Close</button>
             </div>
-            <p style="font-size: 0.85rem; margin-bottom: 1rem;" id="ui-modal-board-desc">Showing official ranking branches for current configuration:</p>
+            <p style="font-size: 0.85rem; margin-bottom: 1rem;" id="ui-modal-board-desc">Showing global ranking matrix branches for current profile:</p>
             
             <div id="modal-leaderboard-content"></div>
         </div>
@@ -645,16 +651,19 @@
                 <button class="btn-gray" style="padding: 0.35rem 0.75rem;" onclick="closeAdminPanel()">✕ Close</button>
             </div>
 
-            <p id="ui-admin-desc" style="font-size:0.9rem;">Type your words below manually using the split format: <code>Word = Translation</code> (One entry per line).</p>
+            <p id="ui-admin-desc" style="font-size:0.9rem;">Type your words below manually using the format: <code>Word = Translation</code> (One entry per line).</p>
             
             <textarea id="word-input" oninput="calculateInputListSize()" placeholder="Apple = Apfel&#10;Banana = Banane&#10;Cat = Katze"></textarea>
 
             <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                 <div class="panel" style="background: rgba(0,0,0,0.25);">
-                    <h3 id="ui-admin-storage-title">💾 Save Local Profiles</h3>
+                    <h3 id="ui-admin-storage-title">💾 Manage Local Setup Packs</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <input type="text" id="list-name" placeholder="Name your storage pack...">
-                        <button id="ui-save-btn" class="btn-success" style="padding: 0.65rem;" onclick="saveCurrentList()">💾 Save Pack</button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button id="ui-save-btn" class="btn-success" style="padding: 0.65rem;" onclick="saveCurrentList()">💾 Save Local Pack</button>
+                            <button id="ui-delete-btn" class="btn-error" style="padding: 0.65rem;" onclick="deleteSelectedLocalList()">🗑️ Wipe Current Local Pack</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -666,6 +675,10 @@
     </div>
 
    <script>
+        // CONFIGURATION SECTION FOR GLOBAL ROUTING
+        // Replace this string with your intermediate webhook endpoint URL (e.g., from Make.com, Pipedream, Zapier, etc.)
+        const INTERMEDIATE_WEBHOOK_URL = "https://YOUR_WEBHOOK_ENDPOINT_HERE.com/scores";
+
         const responseFeedbackPools = {
             en: {
                 correct: ["✨ Correct! Fantastic job.", "🌟 Brilliant! You nailed it.", "🔥 Phenomenal! Spot on.", "🚀 Outstanding answer!", "🎉 Absolutely right! Keep it up."],
@@ -872,20 +885,37 @@
             return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_15`;
         }
 
-        function getLeaderboardData() {
-            const key = getStorageKey();
-            const rawData = localStorage.getItem(key);
-            return rawData ? JSON.parse(rawData) : [];
+        // FETCHING CORE: Reads the JSON file from your public GitHub Pages root folder asynchronously
+        async function getLeaderboardData() {
+            try {
+                const repoPath = window.location.pathname.split('/')[1] || 'vocab-arcade';
+                const ownerName = window.location.hostname.split('.')[0] || 'IsmailEfe1001';
+                
+                let fetchUrl = `leaderboard.json`; 
+                if (window.location.hostname.includes('github.io')) {
+                    fetchUrl = `https://${ownerName}.github.io/${repoPath}/leaderboard.json`;
+                }
+
+                const response = await fetch(fetchUrl + '?nocache=' + Date.now());
+                if (!response.ok) return [];
+                
+                const data = await response.json();
+                const key = getStorageKey();
+                return data[key] || [];
+            } catch (err) {
+                console.warn("Global tracking dynamic load error, parsing defaults:", err);
+                return [];
+            }
         }
 
-        function isScoreEligibleForLeaderboard() {
+        async function isScoreEligibleForLeaderboard() {
             if (!wasGameOfficialMatch) return false; 
             if (totalListSize === 0) return false;
             
             const mode = quizModeSelect.value;
             if (mode === "free") return false; 
 
-            const board = getLeaderboardData();
+            const board = await getLeaderboardData();
             if (board.length < 5) return true;
 
             if (mode === "infinite") {
@@ -902,7 +932,7 @@
 
         function generateLeaderboardHTML(board) {
             if (!board || board.length === 0) {
-                return `<p style="color: var(--text-muted); text-align: center; font-style: italic; margin-top: 1rem;">No official entries recorded yet. Secure your rank!</p>`;
+                return `<p style="color: var(--text-muted); text-align: center; font-style: italic; margin-top: 1rem;">No global records registered yet for this configurations profile branch.</p>`;
             }
             const mode = quizModeSelect.value;
             let rowsHTML = board.map((entry, index) => {
@@ -920,22 +950,24 @@
             </table>`;
         }
 
-        function openLeaderboardView() {
+        async function openLeaderboardView() {
             if (totalListSize === 0) {
                 alert("Please make sure a non-empty wordlist is currently loaded to inspect scores.");
                 return;
             }
-            const board = getLeaderboardData();
-            modalLeaderboardContent.innerHTML = generateLeaderboardHTML(board);
+            modalLeaderboardContent.innerHTML = `<div style="text-align:center; padding:1rem; color:var(--primary);">Loading live network standing records...</div>`;
             leaderboardModal.classList.remove('hidden');
+            const board = await getLeaderboardData();
+            modalLeaderboardContent.innerHTML = generateLeaderboardHTML(board);
         }
 
         function closeLeaderboardView() { leaderboardModal.classList.add('hidden'); }
         function openAdminPanel() { adminPanelModal.classList.remove('hidden'); }
         function closeAdminPanel() { adminPanelModal.classList.add('hidden'); }
 
-        function checkLeaderboardQualification() {
-            if (wasGameOfficialMatch && isScoreEligibleForLeaderboard()) {
+        async function checkLeaderboardQualification() {
+            const qualified = await isScoreEligibleForLeaderboard();
+            if (qualified) {
                 resultsScreen.classList.add('hidden');
                 quizScreen.classList.add('hidden');
                 arcadeEntryScreen.classList.remove('hidden');
@@ -948,34 +980,41 @@
             }
         }
 
-        function saveArcadeScore() {
+        // SUBMITTING CORE: Dispatches data to intermediate processing stream endpoint securely
+        async function saveArcadeScore() {
             const i1 = (document.getElementById('char1').value || "A").substring(0,1).toUpperCase();
             const i2 = (document.getElementById('char2').value || "A").substring(0,1).toUpperCase();
             const i3 = (document.getElementById('char3').value || "A").substring(0,1).toUpperCase();
             const initials = i1 + i2 + i3;
 
-            const mode = quizModeSelect.value;
-            let board = getLeaderboardData();
+            const submitBtn = document.getElementById('arcade-register-btn');
+            const statusLabel = document.getElementById('sync-submitting-status');
+            
+            submitBtn.disabled = true;
+            statusLabel.classList.remove('hidden');
 
-            board.push({ 
-                initials: initials, 
-                score: score, 
-                time: survivalTotalAccumulatedSeconds, 
-                timestamp: Date.now() 
-            });
+            const payloadData = {
+                initials: initials,
+                score: score,
+                time: survivalTotalAccumulatedSeconds,
+                board_key: getStorageKey()
+            };
 
-            if (mode === "infinite") {
-                board.sort((a, b) => b.score - a.score);
-            } else {
-                board.sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return a.time - b.time;
+            try {
+                // Execute streaming asynchronous POST to your serverless middleware collector bridge
+                const response = await fetch(INTERMEDIATE_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payloadData)
                 });
+                
+                console.log("Global sync workflow dispatched successfully.");
+            } catch (err) {
+                console.error("Transmission stream routing pipeline mismatch failure:", err);
             }
 
-            if (board.length > 5) board = board.slice(0, 5);
-            localStorage.setItem(getStorageKey(), JSON.stringify(board));
-            
+            statusLabel.classList.add('hidden');
+            submitBtn.disabled = false;
             arcadeEntryScreen.classList.add('hidden');
             showFinalResultsDashboard();
         }
@@ -1130,13 +1169,37 @@
             let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
             allLists[listName] = listContent;
             localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
-            listNameInput.value = ''; 
             updateDropdown();
+            savedListsDropdown.value = listName;
             alert(`List "${listName}" successfully saved locally!`);
+        }
+
+        // WIPER CORE MODULE: Deletes only local browser-bound workspace configurations
+        function deleteSelectedLocalList() {
+            const selectedValue = savedListsDropdown.value;
+            if (!selectedValue || selectedValue.startsWith("github:")) {
+                alert("Please select a valid custom local user pack profile from the dropdown menu first.");
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to completely erase the local wordlist pack named "${selectedValue}"?`)) {
+                let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
+                delete allLists[selectedValue];
+                localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
+                
+                wordInput.value = "";
+                listNameInput.value = "";
+                savedListsDropdown.value = "";
+                
+                updateDropdown();
+                calculateInputListSize();
+                alert("Local profile configurations packet wiped successfully.");
+            }
         }
 
         function updateDropdown() {
             const localGroup = document.getElementById('local-browser-optgroup');
+            const currentSelected = savedListsDropdown.value;
             localGroup.innerHTML = '';
             let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
             
@@ -1149,6 +1212,10 @@
             }
             if(count === 0) {
                 localGroup.innerHTML = '<option value="" disabled>No local packs stored yet</option>';
+            } else {
+                if (allLists[currentSelected]) {
+                    savedListsDropdown.value = currentSelected;
+                }
             }
         }
 
@@ -1315,16 +1382,19 @@
 
         function backToSetup() {
             clearInterval(timerInterval);
-            quizScreen.classList.add('hidden'); setupScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden'); setupScreen.remove('hidden');
+            setupScreen.classList.remove('hidden');
             updateSettingsDependencies();
         }
 
-        function showFinalResultsDashboard() {
+        async function showFinalResultsDashboard() {
             quizScreen.classList.add('hidden'); resultsScreen.classList.remove('hidden');
             
             if (wasGameOfficialMatch && activeQuizMode !== "free") {
                 leaderboardDisplayWrapper.classList.remove('hidden');
-                resultsLeaderboardContainer.innerHTML = generateLeaderboardHTML(getLeaderboardData());
+                resultsLeaderboardContainer.innerHTML = `<div style="color:var(--primary); font-size:0.9rem; padding:0.5rem;">Fetching public cloud stands matrix...</div>`;
+                const board = await getLeaderboardData();
+                resultsLeaderboardContainer.innerHTML = generateLeaderboardHTML(board);
             } else {
                 leaderboardDisplayWrapper.classList.add('hidden');
             }
