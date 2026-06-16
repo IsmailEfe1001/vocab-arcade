@@ -180,11 +180,6 @@
             text-decoration: line-through;
         }
 
-        .flex-row {
-            display: flex;
-            gap: 10px;
-        }
-
         input[type="text"], input[type="number"], select {
             padding: 0.65rem 0.85rem;
             font-size: 0.9rem;
@@ -454,7 +449,7 @@
 
         .word-count-badge {
             background: rgba(255, 255, 255, 0.05);
-            padding: 0.25rem 0.6rem;
+            padding: 0.25rem 0.6`m;
             border-radius: 6px;
             font-size: 0.85rem;
             border: 1px solid var(--border);
@@ -656,21 +651,15 @@
 
             <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                 <div class="panel" style="background: rgba(0,0,0,0.25);">
-                    <h3 id="ui-admin-storage-title">💾 Save / Mutate Local Profiles</h3>
+                    <h3 id="ui-admin-storage-title">💾 Save Local Profiles</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <input type="text" id="list-name" placeholder="Name your storage pack...">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                            <button id="ui-save-btn" class="btn-success" style="padding: 0.65rem;" onclick="saveCurrentList()">💾 Save Pack</button>
-                            <button id="ui-delete-btn" class="btn-gray" style="background-color: #991b1b; border: none; padding: 0.65rem;" onclick="deleteSelectedList()">🗑️ Wipe Pack</button>
-                        </div>
+                        <button id="ui-save-btn" class="btn-success" style="padding: 0.65rem;" onclick="saveCurrentList()">💾 Save Pack</button>
                     </div>
                 </div>
             </div>
             
-            <div style="display:flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
-                <button id="ui-reset-progress-btn" class="btn-gray" style="background-color: #7f1d1d; border-color: #b91c1c; font-size: 0.85rem;" onclick="resetAllProgressRecords()">
-                    💥 Nuke Records
-                </button>
+            <div style="display:flex; justify-content: flex-end; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
                 <button class="btn-primary" style="padding: 0.75rem 2rem;" onclick="closeAdminPanel()">Apply & Exit Manager</button>
             </div>
         </div>
@@ -682,8 +671,6 @@
                 correct: ["✨ Correct! Fantastic job.", "🌟 Brilliant! You nailed it.", "🔥 Phenomenal! Spot on.", "🚀 Outstanding answer!", "🎉 Absolutely right! Keep it up."],
                 incorrect: ["❌ Not quite. Better luck next time!", "🦖 Close, but not it! Practice makes perfect.", "💫 Ups! Give it another shot on the next one.", "🧠 Incorrect this time, keep exercising your mind!", "⚡ No worries, shake it off and try the next one!"],
                 timeout: ["⏰ Time's up! Speed up next time.", "⌛ Ran out of time! Keep your fingers moving.", "⚡ Too slow! Don't let the clock beat you."],
-                confirmReset: "Are you sure you want to completely wipe out ALL your high scores and records for this specific parameters bracket? This cannot be undone.",
-                resetProgressBtn: "💥 Nuke Records",
                 sandboxWarning: "⚠️ Custom configuration profile active. Leaderboard registration is offline.",
                 officialWarning: "🏆 Official Match settings verified. Leaderboard connectivity is live!"
             },
@@ -691,17 +678,13 @@
                 correct: ["✨ Doğru! Harika iş.", "🌟 Harika! Tam on ikiden vurdun.", "🔥 Süper! Aynen böyle devam.", "🚀 Olağanüstü bir cevap!", "🎉 Kesinlikle doğru! Durmak yok."],
                 incorrect: ["❌ Pek değil. Bir dahakine bol şans!", "🦖 Yakındın ama olmadı! Pratik mükemmelleştirir.", "💫 Hay aksi! Bir sonraki soruda tekrar dene.", "🧠 Bu kez olmadı, zihnini çalıştırmaya devam et!", "⚡ Sorun değil, canını sıkma ve sonrakine odaklan!"],
                 timeout: ["⏰ Süre Bitti! Bir dahakine daha hızlı olmalısın.", "⌛ Zaman tükendi! Parmakları hızlaştırın.", "⚡ Çok yavaş! Saatin seni yenmesine izin verme."],
-                confirmReset: "TÜM yüksek skorlarınızı ve hız rekorlarınızı tamamen sıfırlamak istediğinize emin misiniz? Bu işlem geri alınamaz.",
-                resetProgressBtn: "💥 Skorları Sıfırla",
                 sandboxWarning: "⚠️ Özel ayarlar devrede. Liderlik tablosu kaydı pasiftir.",
                 officialWarning: "🏆 Resmi Maç kuralları doğrulandı. Skor kaydı aktif!"
             },
             es: {
                 correct: ["✨ ¡Correcto! Excelente trabajo.", "🌟 ¡Brillante! Lo has clavado.", "🔥 ¡Fenomenal! Justo en el clavo.", "🚀 ¡Respuesta sobresaliente!", "🎉 ¡Absolutamente correcto! Sigue así."],
                 incorrect: ["❌ No del todo. ¡Más suerte la próxima vez!", "🦖 ¡Cerca, pero no! La práctica hace al maestro.", "💫 ¡Uy! Inténtalo de nuevo en la siguiente.", "🧠 Incorrecto esta vez, ¡sigue ejercitando tu mente!", "⚡ ¡No te preocupes, olvídalo y ve por la próxima!"],
-                timeout: ["⏰ ¡Tiempo agotado! Más rápido la próxima vez.", "⌛ ¡Se acabó el tiempo! Mueve esos dedos.", "⚡ ¡Demasiado lento! No dejes que el reloj te gane."],
-                confirmReset: "¿Estás seguro de que deseas borrar por completo TODOS tus récords? Esto no se puede deshacer.",
-                resetProgressBtn: "💥 Borrar Récords",
+                timeout: ["⏰ ¡Tiempo agotado! Más rápido la próxima vez.", "⌛ ¡Se acabó el tiempo! Mueve esos dedos.", "⚡ ¡Demasiado lento! No dejes que el reloj te gane.",],
                 sandboxWarning: "⚠️ Ajustes personalizados. Registro de records desactivado.",
                 officialWarning: "🏆 ¡Partida Oficial! Tabla de clasificación activa."
             }
@@ -711,9 +694,9 @@
             en: {
                 label: "🌐 App Language:", title: "Vocab Arcade Arena", desc: "Select your wordlist, configure parameters, and challenge the highscores.",
                 storageTitle: "💾 Select Active Wordlist", listPlaceholder: "Name your storage pack...",
-                save: "💾 Save Pack", load: "Load", delete: "🗑️ Wipe Pack", start: "Start Quiz Challenge", translateLabel: "Translate:", submit: "Submit Answer", 
+                save: "💾 Save Pack", load: "Load", start: "Start Quiz Challenge", translateLabel: "Translate:", submit: "Submit Answer", 
                 next: "Next Question", quizComplete: "Quiz Complete! 🎉", tryAgain: "Try Again / New List", question: "Question", of: "of", rerun: "Rerun",
-                alertSelect: "Please choose or create a valid list setup pack.", alertConfirmDelete: "Are you sure you want to permanently delete this list entry from local registry storage?",
+                alertSelect: "Please choose or create a valid list setup pack.",
                 textPrompt: "Please write or format down vocab entries inside the text box first!", correctMsgPlaceholder: "Correct!", incorrectMsgPlaceholder: "The correct answer is: ",
                 back: "◀ Exit", skip: "Skip",
                 modeSurvival: "Survival Mode", modeFree: "Free Mode", modeInfinite: "Infinite Mode",
@@ -723,11 +706,11 @@
                 officialLabel: "🏆 Official Mode"
             },
             tr: {
-                label: "🌐 Uygulama Dili:", title: "Kelime Arenası", desc: "Kelime listenizi seçin, parametreleri ayarlayın ve yüksek skorlara meydan okuyun.",
+                label: "🌐 Uygulama Dili:", title: "Kelime Arenası", desc: "Kelime listenizi seçin, parametreleri ayarlayın og yüksek skorlara meydan okuyun.",
                 storageTitle: "💾 Aktif Kelime Listesi Seçin", listPlaceholder: "Listenize isim verin...",
-                save: "💾 Listeyi Kaydet", load: "Yükle", delete: "🗑️ Seçileni Sil", start: "Testi Başlat", translateLabel: "Çevirisi nedir:", submit: "Cevabı Gönder", 
+                save: "💾 Listeyi Kaydet", load: "Yükle", start: "Testi Başlat", translateLabel: "Çevirisi nedir:", submit: "Cevabı Gönder", 
                 next: "Sıradaki Soru", quizComplete: "Test Tamamlandı! 🎉", tryAgain: "Tekrar Dene / Yeni Liste", question: "Soru", of: "/", rerun: "Tekrar",
-                alertSelect: "Lütfen önce açılır menüden bir liste seçin.", alertConfirmDelete: "Bu listeyi kalıcı olarak silmek istediğinize emin misiniz?",
+                alertSelect: "Lütfen önce açılır menüden bir liste seçin.",
                 textPrompt: "Lütfen önce kelime alanına veri girin!", correctMsgPlaceholder: "Doğru!", incorrectMsgPlaceholder: "Doğru cevap: ",
                 back: "◀ Geri Dön", skip: "Pas Geç",
                 modeSurvival: "Hayatta Kalma Modu", modeFree: "Serbest Mod", modeInfinite: "Sonsuz Mod",
@@ -739,9 +722,9 @@
             es: {
                 label: "🌐 Idioma de la App:", title: "Vocab Arcade Arena", desc: "Selecciona tu lista, configura los parámetros y desafía los récords.",
                 storageTitle: "💾 Seleccionar Lista Activa", listPlaceholder: "Nombre de la lista...",
-                save: "Guardar Lista", load: "Cargar", delete: "Eliminar", start: "Empezar Cuestionario", translateLabel: "Traduce:", submit: "Enviar Respuesta", 
+                save: "Guardar Lista", load: "Cargar", start: "Empezar Cuestionario", translateLabel: "Traduce:", submit: "Enviar Respuesta", 
                 next: "Siguiente Pregunta", quizComplete: "¡Cuestionario Completado! 🎉", tryAgain: "Intentar de Nuevo / Nueva Liste", question: "Pregunta", de: "de", rerun: "Repetir",
-                alertSelect: "Por favor, selecciona primero una lista válida.", alertConfirmDelete: "¿Estás seguro de que deseas eliminar permanentemente esta lista?",
+                alertSelect: "Por favor, selecciona primero una lista válida.",
                 textPrompt: "¡Por favor, introduce algunas palabras primero!", correctMsgPlaceholder: "¡Correcto!", incorrectMsgPlaceholder: "La respuesta correcta es: ",
                 back: "◀ Salir", skip: "Saltar",
                 modeSurvival: "Modo Supervivencia", modeFree: "Modo Libre", modeInfinite: "Modo Infinito",
@@ -812,7 +795,6 @@
         const resultsLeaderboardContainer = document.getElementById('results-leaderboard-container');
         const leaderboardDisplayWrapper = document.getElementById('leaderboard-display-wrapper');
         const modalLeaderboardContent = document.getElementById('modal-leaderboard-content');
-        const uiResetProgressBtn = document.getElementById('ui-reset-progress-btn');
         const githubLoadingStatus = document.getElementById('github-loading-status');
 
         function initAudio() {
@@ -887,8 +869,7 @@
         function getStorageKey() {
             const mode = quizModeSelect.value;
             const direction = quizDirectionSelect.value;
-            const survivalLimit = 15; 
-            return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_${survivalLimit}`;
+            return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_15`;
         }
 
         function getLeaderboardData() {
@@ -999,16 +980,6 @@
             showFinalResultsDashboard();
         }
 
-        function resetAllProgressRecords() {
-            if (totalListSize === 0) return alert("Select a list pack context first before dropping table metrics.");
-            const confirmationText = responseFeedbackPools[currentUILang]?.confirmReset || responseFeedbackPools['en'].confirmReset;
-            if (confirm(confirmationText)) {
-                localStorage.removeItem(getStorageKey());
-                alert("Records wiped out successfully.");
-            }
-        }
-
-        // NEW ASYNCHRONOUS GITHUB FETCH INTEGRATION MODULE
         async function handleListSelectionSourceChange(selectedValue) {
             if (!selectedValue) {
                 wordInput.value = "";
@@ -1016,12 +987,10 @@
                 return;
             }
 
-            // Route 1: Target path points to remote GitHub repository raw domain
             if (selectedValue.startsWith("github:")) {
                 const fileName = selectedValue.replace("github:", "");
                 githubLoadingStatus.classList.remove('hidden');
                 
-                // Dynamically detects the current deployment path user configurations
                 const repoPath = window.location.pathname.split('/')[1] || 'vocab-arcade';
                 const ownerName = window.location.hostname.split('.')[0] || 'IsmailEfe1001';
                 const targetUrl = `https://raw.githubusercontent.com/${ownerName}/${repoPath}/main/${fileName}`;
@@ -1038,10 +1007,9 @@
                 } catch (error) {
                     console.error("Dynamic GitHub Fetch Error: ", error);
                     githubLoadingStatus.classList.add('hidden');
-                    alert(`Could not load "${fileName}" from GitHub repo root folder. Verify that the file exists and is pushed to the main branch.`);
+                    alert(`Could not load "${fileName}" from GitHub repo root folder.`);
                 }
             } else {
-                // Route 2: Target path points to fallback browser storage profile
                 wordInput.value = (JSON.parse(localStorage.getItem('vocabQuizLists')) || {})[selectedValue] || '';
                 listNameInput.value = selectedValue;
                 calculateInputListSize();
@@ -1058,7 +1026,6 @@
             document.getElementById('ui-storage-title').innerText = text.storageTitle;
             listNameInput.placeholder = text.listPlaceholder;
             document.getElementById('ui-save-btn').innerText = text.save;
-            document.getElementById('ui-delete-btn').innerText = text.delete;
             document.getElementById('ui-start-btn').innerText = text.start;
             document.getElementById('ui-translate-label').innerText = text.translateLabel;
             document.getElementById('ui-complete-title').innerText = text.quizComplete;
@@ -1080,7 +1047,6 @@
             document.getElementById('ui-dir-reverse').innerText = text.dirReverse;
             document.getElementById('ui-dir-mixed').innerText = text.dirMixed;
             
-            uiResetProgressBtn.innerText = responseFeedbackPools[currentUILang]?.resetProgressBtn || responseFeedbackPools['en'].resetProgressBtn;
             skipBtn.innerText = text.skip;
 
             if (!isShowingFeedback) actionBtn.innerText = text.submit;
@@ -1183,20 +1149,6 @@
             }
             if(count === 0) {
                 localGroup.innerHTML = '<option value="" disabled>No local packs stored yet</option>';
-            }
-        }
-
-        function deleteSelectedList() {
-            const selectedName = savedListsDropdown.value;
-            if (!selectedName || selectedName.startsWith("github:")) return alert("Cannot delete remote repository lists.");
-            if (confirm(uiLanguages[currentUILang].alertConfirmDelete)) {
-                let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
-                delete allLists[selectedName];
-                localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
-                updateDropdown();
-                wordInput.value = '';
-                listNameInput.value = '';
-                calculateInputListSize();
             }
         }
 
