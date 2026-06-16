@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Immersive Vocab Quiz Builder</title>
+    <title>Vocab Arcade Arena</title>
     <style>
         :root {
             --primary: #818cf8;
@@ -217,7 +217,6 @@
             color: var(--text-main);
         }
 
-        /* Checkbox Styling */
         .official-container {
             display: flex;
             align-items: center;
@@ -399,6 +398,12 @@
             margin: 1.5rem 0;
         }
 
+        .arcade-input-container span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0 5px;
+        }
+
         .arcade-letter-input {
             width: 60px;
             height: 70px;
@@ -466,9 +471,6 @@
             <option value="en">English</option>
             <option value="tr">Türkçe</option>
             <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="ja">日本語</option>
         </select>
     </div>
 
@@ -484,17 +486,26 @@
         </div>
         
         <div class="dashboard-layout">
-            <div class="panel full-width-panel" style="background: rgba(30, 41, 59, 0.45); border-color: rgba(129, 140, 248, 0.2);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div class="panel full-width-panel" style="background: rgba(30, 41, 59, 0.45); border-color: rgba(129, 140, 248, 0.2); gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                     <h3 id="ui-storage-title" style="margin: 0;">💾 Select Active Wordlist</h3>
                     <div id="active-list-count" class="word-count-badge">0 words loaded</div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
-                    <select id="saved-lists-dropdown" style="width: 100%; font-size: 1rem; padding: 0.75rem;" onchange="loadSelectedList()">
-                        <option value="">-- Choose a list to practice --</option>
+                
+                <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-bottom: 0.5rem;">
+                    <select id="saved-lists-dropdown" style="width: 100%; font-size: 1rem; padding: 0.75rem;" onchange="handleListSelectionSourceChange(this.value)">
+                        <option value="">-- Choose an Arcade Wordlist --</option>
+                        <optgroup label="🌐 Live From GitHub Repo" id="github-online-optgroup">
+                            <option value="github:spanish.txt">spanish.txt (Remote Pack)</option>
+                            <option value="github:french.txt">french.txt (Remote Pack)</option>
+                            <option value="github:german.txt">german.txt (Remote Pack)</option>
+                        </optgroup>
+                        <optgroup label="💾 Local Browser Registry" id="local-browser-optgroup">
+                            </optgroup>
                     </select>
                     <button id="ui-refresh-btn" class="btn-gray" onclick="updateDropdown()">🔄 Refresh</button>
                 </div>
+                <div id="github-loading-status" style="font-size: 0.85rem; color: var(--arcade-gold); font-weight: 500; font-style: italic;" class="hidden">🔄 Fetching pack matrix live from GitHub...</div>
             </div>
 
             <div class="panel full-width-panel">
@@ -566,8 +577,6 @@
         <button id="ui-start-btn" class="btn-success btn-large" onclick="startQuiz()">Start Quiz Challenge</button>
     </div>
 
-    <datalist id="languages-list"></datalist>
-
     <div id="quiz-screen" class="card hidden">
         <div id="timer-wrapper" class="timer-container"><div id="timer-bar" class="timer-bar"></div></div>
 
@@ -601,7 +610,9 @@
         
         <div class="arcade-input-container">
             <input type="text" id="char1" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
+            <span>•</span>
             <input type="text" id="char2" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
+            <span>•</span>
             <input type="text" id="char3" class="arcade-letter-input" maxlength="1" value="A" onclick="this.select()">
         </div>
         
@@ -635,27 +646,17 @@
     <div id="admin-panel-modal" class="modal-view hidden">
         <div class="card" style="width: 95%; max-width: 750px; border-color: var(--admin-purple); margin-bottom: 0; max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
-                <h2 style="color: var(--admin-purple); display: flex; align-items: center; gap: 8px;">🛠️ Word Registration & Translation Manager</h2>
+                <h2 style="color: var(--admin-purple); display: flex; align-items: center; gap: 8px;">🛠️ Word Registration Workspace</h2>
                 <button class="btn-gray" style="padding: 0.35rem 0.75rem;" onclick="closeAdminPanel()">✕ Close</button>
             </div>
 
-            <p id="ui-admin-desc" style="font-size:0.9rem;">Type your words below (one entry per line). Use the auto-translator module or structure them manually using the format: <code>Word = Translation</code></p>
+            <p id="ui-admin-desc" style="font-size:0.9rem;">Type your words below manually using the split format: <code>Word = Translation</code> (One entry per line).</p>
             
             <textarea id="word-input" oninput="calculateInputListSize()" placeholder="Apple = Apfel&#10;Banana = Banane&#10;Cat = Katze"></textarea>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                 <div class="panel" style="background: rgba(0,0,0,0.25);">
-                    <h3 id="ui-trans-title">🤖 Search & Auto-Translate</h3>
-                    <div class="flex-row" style="margin-bottom: 0.75rem;">
-                        <input type="text" id="lang-from-search" class="lang-search-input" list="languages-list" value="English" onclick="this.value=''" placeholder="From...">
-                        <span style="align-self: center; font-weight: bold; color: var(--text-muted);">➔</span>
-                        <input type="text" id="lang-to-search" class="lang-search-input" list="languages-list" value="German" onclick="this.value=''" placeholder="To...">
-                    </div>
-                    <button id="translate-btn" class="btn-orange" style="width: 100%;" onclick="runAutoTranslation()">Auto-Translate Untranslated Lines</button>
-                </div>
-
-                <div class="panel" style="background: rgba(0,0,0,0.25);">
-                    <h3 id="ui-admin-storage-title">💾 Save / Mutate Lists</h3>
+                    <h3 id="ui-admin-storage-title">💾 Save / Mutate Local Profiles</h3>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <input type="text" id="list-name" placeholder="Name your storage pack...">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -709,7 +710,7 @@
         const uiLanguages = {
             en: {
                 label: "🌐 App Language:", title: "Vocab Arcade Arena", desc: "Select your wordlist, configure parameters, and challenge the highscores.",
-                transTitle: "🤖 Search & Auto-Translate", autoTrans: "Auto-Translate", storageTitle: "💾 Select Active Wordlist", listPlaceholder: "Name your storage pack...",
+                storageTitle: "💾 Select Active Wordlist", listPlaceholder: "Name your storage pack...",
                 save: "💾 Save Pack", load: "Load", delete: "🗑️ Wipe Pack", start: "Start Quiz Challenge", translateLabel: "Translate:", submit: "Submit Answer", 
                 next: "Next Question", quizComplete: "Quiz Complete! 🎉", tryAgain: "Try Again / New List", question: "Question", of: "of", rerun: "Rerun",
                 alertSelect: "Please choose or create a valid list setup pack.", alertConfirmDelete: "Are you sure you want to permanently delete this list entry from local registry storage?",
@@ -723,7 +724,7 @@
             },
             tr: {
                 label: "🌐 Uygulama Dili:", title: "Kelime Arenası", desc: "Kelime listenizi seçin, parametreleri ayarlayın ve yüksek skorlara meydan okuyun.",
-                transTitle: "🤖 Ara & Otomatik Çevir", autoTrans: "Otomatik Çevir", storageTitle: "💾 Aktif Kelime Listesi Seçin", listPlaceholder: "Listenize isim verin...",
+                storageTitle: "💾 Aktif Kelime Listesi Seçin", listPlaceholder: "Listenize isim verin...",
                 save: "💾 Listeyi Kaydet", load: "Yükle", delete: "🗑️ Seçileni Sil", start: "Testi Başlat", translateLabel: "Çevirisi nedir:", submit: "Cevabı Gönder", 
                 next: "Sıradaki Soru", quizComplete: "Test Tamamlandı! 🎉", tryAgain: "Tekrar Dene / Yeni Liste", question: "Soru", of: "/", rerun: "Tekrar",
                 alertSelect: "Lütfen önce açılır menüden bir liste seçin.", alertConfirmDelete: "Bu listeyi kalıcı olarak silmek istediğinize emin misiniz?",
@@ -737,7 +738,7 @@
             },
             es: {
                 label: "🌐 Idioma de la App:", title: "Vocab Arcade Arena", desc: "Selecciona tu lista, configura los parámetros y desafía los récords.",
-                transTitle: "🤖 Buscar y Traducir", autoTrans: "Auto-Traducir", storageTitle: "💾 Seleccionar Lista Activa", listPlaceholder: "Nombre de la lista...",
+                storageTitle: "💾 Seleccionar Lista Activa", listPlaceholder: "Nombre de la lista...",
                 save: "Guardar Lista", load: "Cargar", delete: "Eliminar", start: "Empezar Cuestionario", translateLabel: "Traduce:", submit: "Enviar Respuesta", 
                 next: "Siguiente Pregunta", quizComplete: "¡Cuestionario Completado! 🎉", tryAgain: "Intentar de Nuevo / Nueva Liste", question: "Pregunta", de: "de", rerun: "Repetir",
                 alertSelect: "Por favor, selecciona primero una lista válida.", alertConfirmDelete: "¿Estás seguro de que deseas eliminar permanentemente esta lista?",
@@ -750,47 +751,8 @@
                 officialLabel: "🏆 Modo Oficial"
             }
         };
-       // Function to fetch and parse the list from GitHub
-async function loadListFromGitHub(filename) {
-    const rawUrl = `https://raw.githubusercontent.com/IsmailEfe1001/vocab-arcade/main/${filename}`;
-    
-    try {
-        const response = await fetch(rawUrl);
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const textData = await response.text();
-        
-        // Parse the text data (assuming 'Word = Translation' format per line)
-        const parsedList = [];
-        const lines = textData.split('\n');
-        
-        lines.forEach(line => {
-            if (line.includes('=')) {
-                const parts = line.split('=');
-                const word = parts[0].trim();
-                const translation = parts[1].trim();
-                
-                if (word && translation) {
-                    parsedList.push({ word: word, translation: translation });
-                }
-            }
-        });
-
-        console.log("Successfully loaded list:", parsedList);
-        return parsedList; // This array can now be fed into your game loop!
-
-    } catch (error) {
-        console.error("Failed to load vocabulary list:", error);
-        alert("Could not load the word list. Make sure the filename is correct.");
-    }
-}
 
         let currentUILang = "en";
-
-        const languageDictionary = {
-            "English": "en", "Turkish": "tr", "Spanish": "es", "French": "fr", "German": "de", "Japanese": "ja"
-        };
-
         let wordList = [];
         let backupPool = []; 
         let score = 0;
@@ -841,7 +803,6 @@ async function loadListFromGitHub(filename) {
         const feedback = document.getElementById('feedback');
         const progress = document.getElementById('progress');
         const scoreText = document.getElementById('score-text');
-        const translateBtn = document.getElementById('translate-btn');
         const timerBar = document.getElementById('timer-bar');
         const timerWrapper = document.getElementById('timer-wrapper');
         const freeClock = document.getElementById('free-clock');
@@ -852,6 +813,7 @@ async function loadListFromGitHub(filename) {
         const leaderboardDisplayWrapper = document.getElementById('leaderboard-display-wrapper');
         const modalLeaderboardContent = document.getElementById('modal-leaderboard-content');
         const uiResetProgressBtn = document.getElementById('ui-reset-progress-btn');
+        const githubLoadingStatus = document.getElementById('github-loading-status');
 
         function initAudio() {
             if (!audioCtx) {
@@ -922,16 +884,11 @@ async function loadListFromGitHub(filename) {
             activeListCount.innerText = `${totalListSize} words loaded`;
         }
 
-        // LEADERBOARD DATA MANAGER
         function getStorageKey() {
             const mode = quizModeSelect.value;
             const direction = quizDirectionSelect.value;
-            const survivalLimit = 15; // Official is forced to 15
-            if (mode === "infinite") {
-                return `arcade_inf_len${totalListSize}_dir_${direction}`;
-            } else {
-                return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_${survivalLimit}`;
-            }
+            const survivalLimit = 15; 
+            return `arcade_${mode}_len${totalListSize}_dir_${direction}_lim_${survivalLimit}`;
         }
 
         function getLeaderboardData() {
@@ -941,11 +898,11 @@ async function loadListFromGitHub(filename) {
         }
 
         function isScoreEligibleForLeaderboard() {
-            if (!wasGameOfficialMatch) return false; // Enforce official version
+            if (!wasGameOfficialMatch) return false; 
             if (totalListSize === 0) return false;
             
             const mode = quizModeSelect.value;
-            if (mode === "free") return false; // Free mode doesn't track records under official conditions
+            if (mode === "free") return false; 
 
             const board = getLeaderboardData();
             if (board.length < 5) return true;
@@ -953,8 +910,6 @@ async function loadListFromGitHub(filename) {
             if (mode === "infinite") {
                 return score > board[board.length - 1].score;
             } else {
-                // Survival Mode: Eligible if your score beats the lowest leaderboard score,
-                // OR if scores are tied but your elapsed time is faster.
                 const lowestEntry = board[board.length - 1];
                 if (score > lowestEntry.score) return true;
                 if (score === lowestEntry.score) {
@@ -995,7 +950,6 @@ async function loadListFromGitHub(filename) {
         }
 
         function closeLeaderboardView() { leaderboardModal.classList.add('hidden'); }
-
         function openAdminPanel() { adminPanelModal.classList.remove('hidden'); }
         function closeAdminPanel() { adminPanelModal.classList.add('hidden'); }
 
@@ -1022,7 +976,6 @@ async function loadListFromGitHub(filename) {
             const mode = quizModeSelect.value;
             let board = getLeaderboardData();
 
-            // Save both performance metrics uniform across modes
             board.push({ 
                 initials: initials, 
                 score: score, 
@@ -1033,11 +986,8 @@ async function loadListFromGitHub(filename) {
             if (mode === "infinite") {
                 board.sort((a, b) => b.score - a.score);
             } else {
-                // Survival Mode Sorting Rule: Highest score first. If tied, fastest time wins.
                 board.sort((a, b) => {
-                    if (b.score !== a.score) {
-                        return b.score - a.score;
-                    }
+                    if (b.score !== a.score) return b.score - a.score;
                     return a.time - b.time;
                 });
             }
@@ -1058,6 +1008,46 @@ async function loadListFromGitHub(filename) {
             }
         }
 
+        // NEW ASYNCHRONOUS GITHUB FETCH INTEGRATION MODULE
+        async function handleListSelectionSourceChange(selectedValue) {
+            if (!selectedValue) {
+                wordInput.value = "";
+                calculateInputListSize();
+                return;
+            }
+
+            // Route 1: Target path points to remote GitHub repository raw domain
+            if (selectedValue.startsWith("github:")) {
+                const fileName = selectedValue.replace("github:", "");
+                githubLoadingStatus.classList.remove('hidden');
+                
+                // Dynamically detects the current deployment path user configurations
+                const repoPath = window.location.pathname.split('/')[1] || 'vocab-arcade';
+                const ownerName = window.location.hostname.split('.')[0] || 'IsmailEfe1001';
+                const targetUrl = `https://raw.githubusercontent.com/${ownerName}/${repoPath}/main/${fileName}`;
+                
+                try {
+                    const response = await fetch(targetUrl);
+                    if (!response.ok) throw new Error("File context read match failure.");
+                    
+                    const textRawData = await response.text();
+                    wordInput.value = textRawData.trim();
+                    listNameInput.value = fileName.replace(".txt", "");
+                    calculateInputListSize();
+                    githubLoadingStatus.classList.add('hidden');
+                } catch (error) {
+                    console.error("Dynamic GitHub Fetch Error: ", error);
+                    githubLoadingStatus.classList.add('hidden');
+                    alert(`Could not load "${fileName}" from GitHub repo root folder. Verify that the file exists and is pushed to the main branch.`);
+                }
+            } else {
+                // Route 2: Target path points to fallback browser storage profile
+                wordInput.value = (JSON.parse(localStorage.getItem('vocabQuizLists')) || {})[selectedValue] || '';
+                listNameInput.value = selectedValue;
+                calculateInputListSize();
+            }
+        }
+
         function changeUILanguage(langKey) {
             currentUILang = uiLanguages[langKey] ? langKey : 'en';
             const text = uiLanguages[currentUILang];
@@ -1065,8 +1055,6 @@ async function loadListFromGitHub(filename) {
             document.getElementById('ui-label-text').innerText = text.label;
             document.getElementById('ui-main-title').innerText = text.title;
             document.getElementById('ui-main-desc').innerText = text.desc;
-            document.getElementById('ui-trans-title').innerText = text.transTitle;
-            translateBtn.innerText = text.autoTrans;
             document.getElementById('ui-storage-title').innerText = text.storageTitle;
             listNameInput.placeholder = text.listPlaceholder;
             document.getElementById('ui-save-btn').innerText = text.save;
@@ -1116,7 +1104,6 @@ async function loadListFromGitHub(filename) {
             const timeInput = document.getElementById('survival-time-input');
             const heartsSelect = document.getElementById('infinite-hearts-select');
 
-            // Reset disables
             timerItem.classList.remove('disabled');
             heartsItem.classList.remove('disabled');
             timeInput.disabled = false;
@@ -1124,17 +1111,13 @@ async function loadListFromGitHub(filename) {
             quizModeSelect.disabled = false;
             quizDirectionSelect.disabled = false;
 
-            // Safe String Fetching Fallback
             const pool = responseFeedbackPools[currentUILang] || responseFeedbackPools['en'];
             const officialWarningStr = pool.officialWarning || responseFeedbackPools['en'].officialWarning;
             const sandboxWarningStr = pool.sandboxWarning || responseFeedbackPools['en'].sandboxWarning;
 
-            // Enforce Official Bracket Rules
             if (isOfficial) {
                 sandboxWarningText.innerText = officialWarningStr;
                 sandboxWarningText.style.color = "var(--arcade-gold)";
-
-                // Lock Target to Mixed Combo during Official Match conditions
                 quizDirectionSelect.value = "mixed";
                 quizDirectionSelect.disabled = true;
 
@@ -1157,7 +1140,6 @@ async function loadListFromGitHub(filename) {
                     sandboxWarningText.style.color = "var(--error)";
                 }
             } else {
-                // Sandbox Mode
                 sandboxWarningText.innerText = sandboxWarningStr;
                 sandboxWarningText.style.color = "var(--text-muted)";
 
@@ -1172,43 +1154,6 @@ async function loadListFromGitHub(filename) {
             }
         }
 
-        function buildLanguageList() {
-            const datalist = document.getElementById('languages-list');
-            for (let langName in languageDictionary) {
-                const option = document.createElement('option');
-                option.value = langName;
-                datalist.appendChild(option);
-            }
-        }
-
-        async function runAutoTranslation() {
-            const text = wordInput.value.trim();
-            if (!text || totalListSize === 0) return alert(uiLanguages[currentUILang].textPrompt);
-
-            const fromLang = languageDictionary[document.getElementById('lang-from-search').value.trim()];
-            const toLang = languageDictionary[document.getElementById('lang-to-search').value.trim()];
-            if (!fromLang || !toLang) return alert("Select standard dictionary registry matches.");
-
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            translateBtn.disabled = true; translateBtn.innerText = "...";
-            let updatedLines = [...lines];
-
-            for (let i = 0; i < updatedLines.length; i++) {
-                if (!updatedLines[i].includes('=')) {
-                    const originalWord = updatedLines[i];
-                    try {
-                        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${fromLang}&tl=${toLang}&dt=t&q=${encodeURIComponent(originalWord)}`;
-                        const response = await fetch(url);
-                        const data = await response.json();
-                        updatedLines[i] = `${originalWord} = ${data[0][0][0].trim()}`;
-                    } catch (e) { console.error(e); }
-                }
-            }
-            wordInput.value = updatedLines.join('\n');
-            translateBtn.disabled = false; translateBtn.innerText = "Auto-Translate Untranslated Lines";
-            calculateInputListSize();
-        }
-
         function saveCurrentList() {
             const listName = listNameInput.value.trim();
             const listContent = wordInput.value.trim();
@@ -1221,34 +1166,29 @@ async function loadListFromGitHub(filename) {
             localStorage.setItem('vocabQuizLists', JSON.stringify(allLists));
             listNameInput.value = ''; 
             updateDropdown();
-            alert(`List "${listName}" successfully saved!`);
+            alert(`List "${listName}" successfully saved locally!`);
         }
 
         function updateDropdown() {
-            savedListsDropdown.innerHTML = '<option value="">-- Choose a list to practice --</option>';
+            const localGroup = document.getElementById('local-browser-optgroup');
+            localGroup.innerHTML = '';
             let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
+            
+            let count = 0;
             for (let listName in allLists) {
                 const option = document.createElement('option');
                 option.value = listName; option.innerText = listName;
-                savedListsDropdown.appendChild(option);
+                localGroup.appendChild(option);
+                count++;
             }
-        }
-
-        function loadSelectedList() {
-            const selectedName = savedListsDropdown.value;
-            if (!selectedName) {
-                wordInput.value = "";
-                calculateInputListSize();
-                return;
+            if(count === 0) {
+                localGroup.innerHTML = '<option value="" disabled>No local packs stored yet</option>';
             }
-            wordInput.value = (JSON.parse(localStorage.getItem('vocabQuizLists')) || {})[selectedName] || '';
-            listNameInput.value = selectedName;
-            calculateInputListSize();
         }
 
         function deleteSelectedList() {
             const selectedName = savedListsDropdown.value;
-            if (!selectedName) return alert(uiLanguages[currentUILang].alertSelect);
+            if (!selectedName || selectedName.startsWith("github:")) return alert("Cannot delete remote repository lists.");
             if (confirm(uiLanguages[currentUILang].alertConfirmDelete)) {
                 let allLists = JSON.parse(localStorage.getItem('vocabQuizLists')) || {};
                 delete allLists[selectedName];
@@ -1278,8 +1218,6 @@ async function loadListFromGitHub(filename) {
             backupPool = wordList.map(item => ({ ...item, skippedBefore: false }));
             score = 0; infiniteQuestionsAnswered = 0; survivalTotalAccumulatedSeconds = 0;
             activeQuizMode = quizModeSelect.value; activeQuizDirection = quizDirectionSelect.value;
-            
-            // Set Match Status
             wasGameOfficialMatch = officialModeCheckbox.checked;
 
             setupScreen.classList.add('hidden'); resultsScreen.classList.add('hidden');
@@ -1339,15 +1277,13 @@ async function loadListFromGitHub(filename) {
             const currentItem = wordList[0];
             if (!currentItem) return;
 
-            const divider = (currentUILang === "ja" || currentUILang === "tr") ? " " : ` ${uiLanguages[currentUILang].of} `;
+            const divider = currentUILang === "tr" ? " " : ` ${uiLanguages[currentUILang].of} `;
             if (activeQuizMode === "infinite") {
                 progress.innerText = `${uiLanguages[currentUILang].streak} ${infiniteQuestionsAnswered}`;
                 return;
             }
             
-            // Safe key assessment fallback to prevent string key errors
-            const rerunLabel = uiLanguages[currentUILang].rerun || "Rerun";
-            let badgeText = currentItem.skippedBefore ? ` (${rerunLabel})` : "";
+            let badgeText = currentItem.skippedBefore ? ` (${uiLanguages[currentUILang].rerun || "Rerun"})` : "";
             progress.innerText = `${uiLanguages[currentUILang].question} ${currentItem.originalIndex}${badgeText}${divider}${totalListSize}`;
         }
 
@@ -1434,7 +1370,6 @@ async function loadListFromGitHub(filename) {
         function showFinalResultsDashboard() {
             quizScreen.classList.add('hidden'); resultsScreen.classList.remove('hidden');
             
-            // Show leaderboard display module only for verified configurations
             if (wasGameOfficialMatch && activeQuizMode !== "free") {
                 leaderboardDisplayWrapper.classList.remove('hidden');
                 resultsLeaderboardContainer.innerHTML = generateLeaderboardHTML(getLeaderboardData());
@@ -1468,7 +1403,6 @@ async function loadListFromGitHub(filename) {
         document.addEventListener('click', () => initAudio(), { once: true });
         userAnswer.addEventListener('keydown', () => initAudio(), { once: true });
 
-        buildLanguageList();
         updateDropdown();
         calculateInputListSize();
         changeUILanguage('en');
