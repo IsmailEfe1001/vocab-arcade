@@ -677,7 +677,7 @@
    <script>
         // CONFIGURATION SECTION FOR GLOBAL ROUTING
         // Replace this string with your intermediate webhook endpoint URL (e.g., from Make.com, Pipedream, Zapier, etc.)
-        const INTERMEDIATE_WEBHOOK_URL = "https://YOUR_WEBHOOK_ENDPOINT_HERE.com/scores";
+        const INTERMEDIATE_WEBHOOK_URL = "https://hook.eu1.make.com/v40jv0z5ibm7p9rmu7xfikbnbdbbwhps";
 
         const responseFeedbackPools = {
             en: {
@@ -981,43 +981,40 @@
         }
 
         // SUBMITTING CORE: Dispatches data to intermediate processing stream endpoint securely
-        async function saveArcadeScore() {
-            const i1 = (document.getElementById('char1').value || "A").substring(0,1).toUpperCase();
-            const i2 = (document.getElementById('char2').value || "A").substring(0,1).toUpperCase();
-            const i3 = (document.getElementById('char3').value || "A").substring(0,1).toUpperCase();
-            const initials = i1 + i2 + i3;
+async function saveArcadeScore() {
+    const i1 = (document.getElementById('char1').value || "A").substring(0,1).toUpperCase();
+    const i2 = (document.getElementById('char2').value || "A").substring(0,1).toUpperCase();
+    const i3 = (document.getElementById('char3').value || "A").substring(0,1).toUpperCase();
+    const initials = i1 + i2 + i3;
 
-            const submitBtn = document.getElementById('arcade-register-btn');
-            const statusLabel = document.getElementById('sync-submitting-status');
-            
-            submitBtn.disabled = true;
-            statusLabel.classList.remove('hidden');
+    const submitBtn = document.getElementById('arcade-register-btn');
+    const statusLabel = document.getElementById('sync-submitting-status');
+    
+    submitBtn.disabled = true;
+    statusLabel.classList.remove('hidden');
 
-            const payloadData = {
-                initials: initials,
-                score: score,
-                time: survivalTotalAccumulatedSeconds,
-                board_key: getStorageKey()
-            };
+    const payloadData = {
+        initials: initials,
+        score: score,
+        time: survivalTotalAccumulatedSeconds,
+        board_key: getStorageKey()
+    };
 
-            try {
-                // Execute streaming asynchronous POST to your serverless middleware collector bridge
-                const response = await fetch(INTERMEDIATE_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payloadData)
-                });
-                
-                console.log("Global sync workflow dispatched successfully.");
-            } catch (err) {
-                console.error("Transmission stream routing pipeline mismatch failure:", err);
-            }
+    try {
+        await fetch(INTERMEDIATE_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payloadData)
+        });
+    } catch (err) {
+        console.error("Transmission stream routing failure:", err);
+    }
 
-            statusLabel.classList.add('hidden');
-            submitBtn.disabled = false;
-            arcadeEntryScreen.classList.add('hidden');
-            showFinalResultsDashboard();
-        }
+    statusLabel.classList.add('hidden');
+    submitBtn.disabled = false;
+    arcadeEntryScreen.classList.add('hidden');
+    showFinalResultsDashboard();
+}
 
         async function handleListSelectionSourceChange(selectedValue) {
             if (!selectedValue) {
